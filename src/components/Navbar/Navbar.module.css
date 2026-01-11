@@ -1,0 +1,78 @@
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: var(--color-primary);
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.logoContainer {
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    object-fit: contain;
+}
+
+.links {
+    display: flex;
+    gap: 2rem;
+}
+
+.link {
+    color: white;
+    font-weight: bold;
+    font-size: 1.1rem;
+    transition: opacity 0.2s;
+}
+
+.link:hover {
+    opacity: 0.8;
+}
+
+.auth {
+    display: flex;
+    align-items: center;
+}
+
+.userMenu {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.userName {
+    font-weight: bold;
+}
+
+.logoutButton,
+.loginButton {
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+.logoutButton {
+    background-color: var(--color-secondary);
+    color: white;
+}
+
+.logoutButton:hover {
+    background-color: var(--color-secondary-dark);
+}
+
+.loginButton {
+    background-color: white;
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+.loginButton:hover {
+    background-color: #f0f0f0;
+}
