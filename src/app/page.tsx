@@ -14,75 +14,79 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
   const session = await getServerSession(authOptions);
   const params = await searchParams;
 
+  // 1. Definimos la query para la búsqueda
+  const query = params.search ? { text: { $regex: params.search, $options: "i" } } : {};
+
   let jokes = [];
   try {
-    jokes = await Joke.find(query).populate('author', 'username image').sort({ createdAt: -1 }).lean();
+    // 2. Traemos los chistes y poblamos el autor para tener nombre y foto real de la DB
+    jokes = await Joke.find(query)
+      .populate('author', 'username image')
+      .sort({ createdAt: -1 })
+      .lean();
   } catch (error) {
     console.warn("Populate failed, falling back to basic fetch:", error);
-    try {
-      jokes = await Joke.find(query).sort({ createdAt: -1 }).lean();
-    } catch (innerError) {
-      console.error("Critical error fetching jokes:", innerError);
-    }
+    jokes = await Joke.find(query).sort({ createdAt: -1 }).lean();
   }
 
   let userFavorites: string[] = [];
-  if (session && session.user && session.user.email) {
+  if (session?.user?.email) {
     const user = await User.findOne({ email: session.user.email });
     if (user) {
       userFavorites = user.favoriteJokes.map((id: any) => id.toString());
     }
   }
 
-  // Serialize the _id and other objectIds to strings for passing to client component
-  const serializedJokes = jokes.map((joke: any) => {
-    // Handle author: could be populated object, ObjectId string, or legacy username string
+  // 3. SERIALIZACIÓN PROFUNDA: Limpieza total de objetos de MongoDB
+  // Usamos JSON.parse(JSON.stringify()) para convertir ObjectIDs y Buffers en texto plano
+  const plainJokes = JSON.parse(JSON.stringify(jokes));
+
+  const serializedJokes = plainJokes.map((joke: any) => {
+    // 4. Lógica para manejar autores (Nuevos con ID / Antiguos con String)
     let authorObj = {
-      _id: 'unknown',
-      username: 'Anonymous',
-      image: null
+      username: 'Anónimo',
+      image: `https://api.dicebear.com/7.x/avataaars/svg?seed=fallback`
     };
 
     if (joke.author) {
       if (typeof joke.author === 'object' && joke.author.username) {
-        // Populated object
+        // Caso Ideal: Usuario poblado correctamente
         authorObj = {
-          _id: joke.author._id ? joke.author._id.toString() : 'unknown',
           username: joke.author.username,
-          image: joke.author.image || null
+          image: joke.author.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${joke.author.username}`
         };
       } else if (typeof joke.author === 'string') {
-        // Legacy string (username) or ObjectId string
-        // If it looks like an ObjectId, we might not have the username, so default to Anonymous or try to guess?
-        // But based on the error "Wahandri", it's a username.
-        // We can assume it's the username.
-        authorObj.username = joke.author;
-        // Generate DiceBear URL if image is missing (JokeCard handles this fallback too, but good to be explicit if needed)
+        // Caso Legacy: El autor era solo un nombre escrito
+        authorObj = {
+          username: joke.author,
+          image: `https://api.dicebear.com/7.x/avataaars/svg?seed=${joke.author}`
+        };
       }
     }
 
     return {
       ...joke,
-      _id: joke._id.toString(),
       author: authorObj,
-      userScores: joke.userScores?.map((s: any) => ({ ...s, _id: s._id?.toString() })) || [],
-      ratings: joke.ratings || [],
-      createdAt: joke.createdAt?.toISOString(),
-      updatedAt: joke.updatedAt?.toISOString(),
+      // Sincronizamos la puntuación para las estrellas del frontend
+      score: joke.averageRating || joke.score || 0,
     };
   });
 
   return (
-    <div>
+    <div className={styles.container}>
       <Hero />
       <div className={styles.grid}>
-        {serializedJokes.map((joke) => (
-          <JokeCard
-            key={joke._id}
-            joke={joke}
-            isFavoriteInitial={userFavorites.includes(joke._id)}
-          />
-        ))}
+        {serializedJokes.length > 0 ? (
+          serializedJokes.map((joke: any) => (
+            <JokeCard
+              key={joke._id}
+              joke={joke}
+              isFavoriteInitial={userFavorites.includes(joke._id)}
+            />
+          ))
+        ) : (
+          <p className={styles.noJokes}>No hay chistes que mostrar.</p>
+        )}
       </div>
     </div>
   );

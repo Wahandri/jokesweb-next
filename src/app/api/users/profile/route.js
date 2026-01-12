@@ -19,8 +19,8 @@ export async function PATCH(req) {
             return NextResponse.json({ error: "Image URL is required" }, { status: 400 });
         }
 
-        // Validate that the image URL is from RoboHash (security check)
-        if (!image.startsWith("https://robohash.org/")) {
+        // Validate that the image URL is from DiceBear (security check)
+        if (!image.startsWith("https://api.dicebear.com/")) {
             return NextResponse.json({ error: "Invalid image source" }, { status: 400 });
         }
 

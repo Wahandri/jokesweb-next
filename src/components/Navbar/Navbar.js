@@ -44,11 +44,12 @@ export default function Navbar() {
                     <div className={styles.userMenu}>
                         <Link href="/user" className={styles.userLink}>
                             <Image
-                                src={session.user.image || `https://robohash.org/${session.user.name}?set=set1`}
+                                src={session.user.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${session.user.name}`}
                                 alt={session.user.name}
                                 width={32}
                                 height={32}
                                 className={styles.avatar}
+                                unoptimized
                             />
                             <span className={styles.userName}>{session.user.name}</span>
                         </Link>

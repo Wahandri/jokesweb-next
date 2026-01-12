@@ -95,6 +95,7 @@ export default function JokeCard({ joke, isFavoriteInitial = false, onDelete = u
                         width={40}
                         height={40}
                         className={styles.avatar}
+                        unoptimized
                     />
                     <div className={styles.userMeta}>
                         <span className={styles.author}>@{joke.author?.username || 'Anonymous'}</span>
