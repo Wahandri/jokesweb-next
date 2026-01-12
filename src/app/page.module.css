@@ -1,0 +1,24 @@
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.title {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: var(--color-primary-dark);
+    font-family: var(--font-indie);
+    font-size: 2.5rem;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.noJokes {
+    text-align: center;
+    font-size: 1.2rem;
+    color: var(--color-text);
+}
