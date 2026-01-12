@@ -30,7 +30,10 @@ export default function UserProfile() {
             const jokesRes = await fetch("/api/jokes");
             if (jokesRes.ok) {
                 const allJokes = await jokesRes.json();
-                const myJokes = allJokes.filter(joke => joke.author === session.user.name);
+                const myJokes = allJokes.filter(joke =>
+                    (joke.author?.username === session.user.name) ||
+                    (joke.author === session.user.name) // Fallback if not populated (though it should be)
+                );
                 setJokes(myJokes);
             }
 

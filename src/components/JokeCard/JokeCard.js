@@ -29,7 +29,7 @@ export default function JokeCard({ joke, isFavoriteInitial = false, onDelete = u
 
         try {
             const res = await fetch(`/api/jokes/${joke._id}/score`, {
-                method: "PATCH",
+                method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     score: newScore,
@@ -39,7 +39,7 @@ export default function JokeCard({ joke, isFavoriteInitial = false, onDelete = u
 
             if (res.ok) {
                 const data = await res.json();
-                setScore(data.joke.score);
+                setScore(data.joke.averageRating || data.joke.score);
                 setUserScore(newScore);
             }
         } catch (error) {
@@ -51,39 +51,14 @@ export default function JokeCard({ joke, isFavoriteInitial = false, onDelete = u
         if (!session) return alert("Inicia sesión para guardar favoritos");
 
         try {
-            // Logic to toggle favorite would go here. 
-            // For now, we just implement the add to favorite as per requirements for the star button.
-            // If we want to toggle, we need to know if it's already a favorite.
-            // The requirement says "Añade un botón de 'Favorito' ... que llame a la API /api/users/favorites"
-            // But usually it's a toggle. Let's assume adding for now or check API.
-            // The legacy API had /:id/favorite to add.
-            // Wait, the plan said "GET /api/users/favorites". 
-            // I need to check if I implemented a POST/PUT for favorites.
-            // Looking back at step 93 (User Request), it said:
-            // "GET /api/users/favorites: Devuelve la lista..."
-            // It didn't explicitly ask for a POST endpoint for favorites in Step 3, but Step 5 says:
-            // "Añade un botón de 'Favorito' ... que llame a la API /api/users/favorites."
-            // This implies I might have missed creating the POST endpoint for favorites in Step 3?
-            // Let me check my Step 3 work. 
-            // I implemented GET /api/users/favorites.
-            // I did NOT implement POST /api/users/favorites or POST /api/jokes/:id/favorite.
-            // The user request in Step 3 was specific about endpoints to create.
-            // But Step 5 asks for a button to call it. 
-            // I should probably implement the API route for adding favorites if it's missing, or maybe I missed it in the prompt.
-            // Re-reading Step 3 prompt: "GET /api/users/favorites ... Devuelve la lista...". It didn't ask for POST.
-            // But Step 5 says: "Añade un botón de 'Favorito' ... que llame a la API /api/users/favorites."
-            // This is slightly ambiguous. It likely means "call an API to add to favorites".
-            // I will implement a server action or a new API route for adding favorites if needed, or just use the one I have if I can adapt it (unlikely for GET).
-            // I will create a new route `src/app/api/jokes/[id]/favorite/route.js` to handle toggling favorites, similar to legacy.
-
             const res = await fetch(`/api/jokes/${joke._id}/favorite`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ userId: session.user.id }), // Or just use session on server
+                body: JSON.stringify({ userId: session.user.id }),
             });
 
             if (res.ok) {
-                setIsFavorite(!isFavorite); // Optimistic toggle
+                setIsFavorite(!isFavorite);
                 alert("Favorito actualizado!");
             }
         } catch (error) {
@@ -94,7 +69,7 @@ export default function JokeCard({ joke, isFavoriteInitial = false, onDelete = u
     const handleSpeak = () => {
         if (!("speechSynthesis" in window)) return;
 
-        window.speechSynthesis.cancel(); // Cancel previous
+        window.speechSynthesis.cancel();
 
         if (isSpeaking) {
             setIsSpeaking(false);
@@ -136,10 +111,20 @@ export default function JokeCard({ joke, isFavoriteInitial = false, onDelete = u
                 <div className={styles.rating}>
                     <div className={styles.stars}>
                         {[1, 2, 3, 4, 5].map((star) => (
-                            <span key={star} style={{ color: star <= Math.round(score) ? '#FFD700' : '#E0E0E0' }}>★</span>
+                            <button
+                                key={star}
+                                onClick={() => handleVote(star)}
+                                className={styles.starButton}
+                                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                            >
+                                <span style={{ color: star <= Math.round(score) ? '#FFD700' : '#E0E0E0', fontSize: '1.2rem' }}>★</span>
+                            </button>
                         ))}
                     </div>
                     <span className={styles.scoreValue}>{score.toFixed(1)}</span>
+                    <span className={styles.emoji} style={{ fontSize: '1.5rem', marginLeft: '10px' }}>
+                        {score < 1 ? '😕' : score < 2 ? '😐' : score < 3 ? '🙂' : score < 4 ? '🤭' : '😂'}
+                    </span>
                 </div>
 
                 <div className={styles.actions}>

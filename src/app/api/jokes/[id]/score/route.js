@@ -4,7 +4,7 @@ import dbConnect from "@/lib/mongodb";
 import Joke from "@/models/Joke";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-export async function PATCH(req, { params }) {
+export async function POST(req, { params }) {
     try {
         const session = await getServerSession(authOptions);
 
@@ -17,7 +17,7 @@ export async function PATCH(req, { params }) {
 
         await dbConnect();
 
-        const { id } = await params; // Next.js 15+ params are async
+        const { id } = await params;
         const { score, userEmail } = await req.json();
 
         if (score === undefined || score < 0 || score > 5) {
@@ -49,9 +49,13 @@ export async function PATCH(req, { params }) {
             joke.userScores.push({ email: userEmail, score });
         }
 
+        // Sync ratings array from userScores
+        joke.ratings = joke.userScores.map(s => s.score);
+
         // Recalculate average score
-        const totalScore = joke.userScores.reduce((acc, curr) => acc + curr.score, 0);
-        joke.score = totalScore / joke.userScores.length;
+        const totalScore = joke.ratings.reduce((acc, curr) => acc + curr, 0);
+        joke.averageRating = totalScore / joke.ratings.length;
+        joke.score = joke.averageRating; // Keep score synced for backward compatibility if needed
 
         await joke.save();
 

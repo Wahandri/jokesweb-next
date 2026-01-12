@@ -23,6 +23,11 @@ const JokeSchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
+    averageRating: {
+        type: Number,
+        default: 0,
+    },
+    ratings: [Number],
     userScores: [
         {
             email: {
