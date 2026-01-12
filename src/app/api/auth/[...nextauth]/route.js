@@ -57,7 +57,7 @@ export const authOptions = {
             }
             return token;
         },
-        async session({ session, token }) {
+        async session({ session, token, trigger }) {
             if (session.user) {
                 session.user.id = token.id;
                 session.user.role = token.role;
@@ -68,6 +68,12 @@ export const authOptions = {
                 }
                 session.user.image = token.picture;
             }
+
+            // Ensure session updates are handled (safety check for avatar updates)
+            if (trigger === "update" && token.picture) {
+                session.user.image = token.picture;
+            }
+
             return session;
         },
     },
