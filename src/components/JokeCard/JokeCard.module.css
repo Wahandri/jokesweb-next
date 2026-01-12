@@ -29,6 +29,7 @@
 .avatar {
     border-radius: 50%;
     object-fit: cover;
+    border: 2px solid var(--color-border);
 }
 
 .userMeta {
@@ -123,13 +124,42 @@
     cursor: pointer;
     padding: 0.5rem;
     border-radius: 50%;
-    transition: background-color 0.2s;
+    transition: background-color 0.2s, transform 0.2s;
     color: var(--color-text-light);
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: 1.2rem;
 }
 
 .actionButton:hover {
     background-color: var(--color-background);
+}
+
+.speaking {
+    color: var(--color-secondary);
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.deleteButton {
+    color: #ff4d4d;
+}
+
+.deleteButton:hover {
+    background-color: #ffe6e6;
+    transform: scale(1.1);
 }

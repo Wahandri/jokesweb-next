@@ -1,43 +1,39 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import styles from "./Hero.module.css";
 
 export default function Hero() {
-    const categories = [
-        { name: "All", icon: "🔥", active: true },
-        { name: "Programming", icon: "💻" },
-        { name: "Dark Humor", icon: "🌑" },
-        { name: "One-liners", icon: "⚡" },
-        { name: "Tech", icon: "📱" },
-        { name: "Dad Jokes", icon: "👨" },
-    ];
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const [query, setQuery] = useState(searchParams.get("search") || "");
+
+    const handleSearch = (e) => {
+        e.preventDefault();
+        if (query.trim()) {
+            router.push(`/?search=${encodeURIComponent(query)}`);
+        } else {
+            router.push("/");
+        }
+    };
 
     return (
         <section className={styles.hero}>
             <h1 className={styles.title}>
-                Find your daily dose of <span className={styles.highlight}>laughter</span>!
+                ¡Encuentra tu dosis diaria de <span className={styles.highlight}>risas</span>!
             </h1>
 
-            <div className={styles.searchContainer}>
+            <form onSubmit={handleSearch} className={styles.searchContainer}>
                 <input
                     type="text"
-                    placeholder="Search for something funny..."
+                    placeholder="Busca algo divertido..."
                     className={styles.searchInput}
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
                 />
-                <button className={styles.searchButton}>Search</button>
-            </div>
-
-            <div className={styles.categories}>
-                {categories.map((cat) => (
-                    <button
-                        key={cat.name}
-                        className={`${styles.categoryPill} ${cat.active ? styles.active : ''}`}
-                    >
-                        <span>{cat.icon}</span>
-                        {cat.name}
-                    </button>
-                ))}
-            </div>
+                <button type="submit" className={styles.searchButton}>Buscar</button>
+            </form>
         </section>
     );
 }

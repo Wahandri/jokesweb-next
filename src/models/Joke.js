@@ -7,8 +7,9 @@ const JokeSchema = new mongoose.Schema({
         unique: true,
     },
     author: {
-        type: String,
-        default: "Anonymous",
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
     },
     createdAt: {
         type: Date,

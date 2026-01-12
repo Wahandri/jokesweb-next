@@ -11,7 +11,7 @@ export async function GET(req) {
         const { searchParams } = new URL(req.url);
         const sortByScore = searchParams.get("sortByScore") === "true";
 
-        let query = Joke.find();
+        let query = Joke.find().populate('author', 'username image');
 
         if (sortByScore) {
             query = query.sort({ score: -1 }).limit(10);
@@ -44,6 +44,18 @@ export async function POST(req) {
 
         await dbConnect();
 
+        // Get user ID from DB using email if session.user.id is not reliable or to be safe
+        // But we should rely on session if configured correctly.
+        // Let's assume session.user.id is there (we will verify/ensure it).
+        // If not, we fetch user.
+        // Actually, let's fetch the user to be safe and get the _id.
+        const User = (await import("@/models/User")).default;
+        const user = await User.findOne({ email: session.user.email });
+
+        if (!user) {
+            return NextResponse.json({ error: "User not found" }, { status: 404 });
+        }
+
         const { text } = await req.json();
 
         if (!text) {
@@ -55,7 +67,7 @@ export async function POST(req) {
 
         const joke = new Joke({
             text,
-            author: session.user.name || "Anonymous", // Use session user name
+            author: user._id,
         });
 
         const savedJoke = await joke.save();

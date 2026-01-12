@@ -5,13 +5,15 @@ import Image from "next/image";
 import { useSession } from "next-auth/react";
 import styles from "./JokeCard.module.css";
 
-export default function JokeCard({ joke, isFavoriteInitial = false }) {
+export default function JokeCard({ joke, isFavoriteInitial = false, onDelete = undefined }) {
     const { data: session } = useSession();
     const [score, setScore] = useState(joke.score);
     const [userScore, setUserScore] = useState(
         joke.userScores?.find((s) => s.email === session?.user?.email)?.score || 0
     );
     const [isFavorite, setIsFavorite] = useState(isFavoriteInitial);
+
+    const [isSpeaking, setIsSpeaking] = useState(false);
 
     // Calculate which score image to show based on average score
     const getScoreImage = (currentScore) => {
@@ -89,24 +91,40 @@ export default function JokeCard({ joke, isFavoriteInitial = false }) {
         }
     };
 
+    const handleSpeak = () => {
+        if (!("speechSynthesis" in window)) return;
+
+        window.speechSynthesis.cancel(); // Cancel previous
+
+        if (isSpeaking) {
+            setIsSpeaking(false);
+            return;
+        }
+
+        const utterance = new SpeechSynthesisUtterance(joke.text);
+        utterance.lang = "es-ES";
+        utterance.onstart = () => setIsSpeaking(true);
+        utterance.onend = () => setIsSpeaking(false);
+        utterance.onerror = () => setIsSpeaking(false);
+
+        window.speechSynthesis.speak(utterance);
+    };
+
     return (
         <div className={styles.card}>
             <div className={styles.header}>
                 <div className={styles.userInfo}>
                     <Image
-                        src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${joke.author}`}
-                        alt={joke.author}
+                        src={joke.author?.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${joke.author?.username || 'Anonymous'}`}
+                        alt={joke.author?.username || 'Anonymous'}
                         width={40}
                         height={40}
                         className={styles.avatar}
                     />
                     <div className={styles.userMeta}>
-                        <span className={styles.author}>@{joke.author}</span>
-                        <span className={styles.date}>2h ago</span>
+                        <span className={styles.author}>@{joke.author?.username || 'Anonymous'}</span>
+                        <span className={styles.date}>{new Date(joke.createdAt).toLocaleDateString('es-ES')}</span>
                     </div>
-                </div>
-                <div className={styles.categoryTag}>
-                    <span>Programming</span>
                 </div>
             </div>
 
@@ -125,6 +143,14 @@ export default function JokeCard({ joke, isFavoriteInitial = false }) {
                 </div>
 
                 <div className={styles.actions}>
+                    <button
+                        onClick={handleSpeak}
+                        className={`${styles.actionButton} ${isSpeaking ? styles.speaking : ''}`}
+                        aria-label="Escuchar chiste"
+                        title="Escuchar chiste"
+                    >
+                        {isSpeaking ? '🔊' : '🔈'}
+                    </button>
                     {session && (
                         <button onClick={handleFavorite} className={styles.actionButton}>
                             <Image
@@ -144,6 +170,15 @@ export default function JokeCard({ joke, isFavoriteInitial = false }) {
                             <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
                         </svg>
                     </button>
+                    {onDelete && (
+                        <button
+                            onClick={() => onDelete(joke._id)}
+                            className={`${styles.actionButton} ${styles.deleteButton}`}
+                            title="Eliminar chiste"
+                        >
+                            🗑️
+                        </button>
+                    )}
                 </div>
             </div>
         </div>

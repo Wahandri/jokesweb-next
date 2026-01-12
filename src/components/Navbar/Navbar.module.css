@@ -47,8 +47,28 @@
     gap: 1rem;
 }
 
+.userLink {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: var(--color-text-dark);
+    font-weight: 700;
+    transition: color 0.2s;
+}
+
+.userLink:hover {
+    color: var(--color-primary-dark);
+}
+
+.avatar {
+    border-radius: 50%;
+    border: 2px solid var(--color-primary);
+    background-color: #f0f0f0;
+}
+
 .userName {
-    font-weight: 600;
+    font-weight: 700;
 }
 
 .logoutButton {

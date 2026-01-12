@@ -24,33 +24,42 @@ export default function Navbar() {
             </div>
             <div className={styles.links}>
                 <Link href="/" className={styles.link}>
-                    Jokes
+                    Chistes
                 </Link>
                 <Link href="/top" className={styles.link}>
-                    Top Rated
+                    Mejores
                 </Link>
                 {session ? (
                     <Link href="/create-joke" className={styles.submitButton}>
-                        Submit Joke
+                        Subir Chiste
                     </Link>
                 ) : (
                     <Link href="/auth/login" className={styles.link}>
-                        Login
+                        Iniciar Sesión
                     </Link>
                 )}
             </div>
             <div className={styles.auth}>
                 {session && (
                     <div className={styles.userMenu}>
-                        <span className={styles.userName}>Hola, {session.user.name}</span>
+                        <Link href="/user" className={styles.userLink}>
+                            <Image
+                                src={session.user.image || `https://robohash.org/${session.user.name}?set=set1`}
+                                alt={session.user.name}
+                                width={32}
+                                height={32}
+                                className={styles.avatar}
+                            />
+                            <span className={styles.userName}>{session.user.name}</span>
+                        </Link>
                         <button onClick={() => signOut()} className={styles.logoutButton}>
-                            Logout
+                            Cerrar Sesión
                         </button>
                     </div>
                 )}
                 {!session && (
                     <Link href="/create-joke" className={styles.submitButton}>
-                        Submit Joke
+                        Subir Chiste
                     </Link>
                 )}
             </div>

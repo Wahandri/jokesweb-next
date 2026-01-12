@@ -13,12 +13,37 @@ export default function RegisterPage() {
     const [error, setError] = useState("");
     const router = useRouter();
 
+    const [passwordError, setPasswordError] = useState("");
+
+    const validatePassword = (pass) => {
+        const hasUpperCase = /[A-Z]/.test(pass);
+        const hasNumber = /\d/.test(pass);
+        const isLengthValid = pass.length >= 8;
+
+        if (!isLengthValid) return "La contraseña debe tener al menos 8 caracteres.";
+        if (!hasUpperCase) return "La contraseña debe tener al menos una mayúscula.";
+        if (!hasNumber) return "La contraseña debe tener al menos un número.";
+        return "";
+    };
+
+    const handlePasswordChange = (e) => {
+        const newPassword = e.target.value;
+        setPassword(newPassword);
+        setPasswordError(validatePassword(newPassword));
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
 
+        const passValidation = validatePassword(password);
+        if (passValidation) {
+            setError(passValidation);
+            return;
+        }
+
         if (password !== confirmPassword) {
-            setError("Passwords do not match");
+            setError("Las contraseñas no coinciden");
             return;
         }
 
@@ -34,10 +59,10 @@ export default function RegisterPage() {
             if (res.ok) {
                 router.push("/auth/login");
             } else {
-                setError(data.error || "Registration failed");
+                setError(data.error || "Error en el registro");
             }
         } catch (err) {
-            setError("An error occurred. Please try again.");
+            setError("Ocurrió un error. Por favor intenta de nuevo.");
         }
     };
 
@@ -50,41 +75,46 @@ export default function RegisterPage() {
                     <div className={styles.inputGroup}>
                         <input
                             type="text"
-                            placeholder="Username"
+                            placeholder="Nombre de usuario"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
                             required
+                            className={styles.input}
                         />
                     </div>
                     <div className={styles.inputGroup}>
                         <input
                             type="email"
-                            placeholder="Email"
+                            placeholder="Correo Electrónico"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
+                            className={styles.input}
                         />
                     </div>
                     <div className={styles.inputGroup}>
                         <input
                             type="password"
-                            placeholder="Password"
+                            placeholder="Contraseña"
                             value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            onChange={handlePasswordChange}
                             required
+                            className={`${styles.input} ${passwordError ? styles.invalid : ''}`}
                         />
+                        {passwordError && <p className={styles.fieldError}>{passwordError}</p>}
                     </div>
                     <div className={styles.inputGroup}>
                         <input
                             type="password"
-                            placeholder="Confirm Password"
+                            placeholder="Confirmar Contraseña"
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
                             required
+                            className={styles.input}
                         />
                     </div>
                     <button type="submit" className={styles.button}>
-                        Create
+                        Crear Cuenta
                     </button>
                 </form>
                 <Link href="/auth/login" className={styles.link}>

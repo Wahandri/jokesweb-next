@@ -37,6 +37,7 @@ export const authOptions = {
                     name: user.username,
                     role: user.role,
                     active: user.active,
+                    image: user.image,
                 };
             },
         }),
@@ -47,6 +48,7 @@ export const authOptions = {
                 token.id = user.id;
                 token.role = user.role;
                 token.active = user.active;
+                token.username = user.name; // user.name is mapped to username in authorize
             }
             return token;
         },
@@ -55,6 +57,21 @@ export const authOptions = {
                 session.user.id = token.id;
                 session.user.role = token.role;
                 session.user.active = token.active;
+                session.user.username = token.username;
+                // Ensure name is set, fallback to username if missing (though authorize sets name=username)
+                if (!session.user.name) {
+                    session.user.name = token.username;
+                }
+                // Add image to session
+                session.user.image = token.picture; // NextAuth usually maps picture to token.picture
+                // But we need to ensure it comes from our DB user if we want it to be up to date on refresh
+                // Actually, the authorize function returns the user object, but jwt callback receives it only on login.
+                // To keep it fresh, we might need to fetch it in session callback or rely on the client side fetch we added in User Page.
+                // For Navbar, it uses session. If we want it to update immediately after change without re-login, we need to update the session.
+                // But session update is tricky.
+                // However, since we are fetching fresh data in User Page, that's fine.
+                // For Navbar, it will show the session image.
+                // Let's ensure `authorize` returns the image.
             }
             return session;
         },

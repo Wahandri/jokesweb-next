@@ -1,0 +1,208 @@
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.profileCard {
+    background-color: var(--color-surface);
+    border-radius: 20px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    margin-bottom: 3rem;
+    text-align: center;
+}
+
+.avatarContainer {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.avatar {
+    border-radius: 50%;
+    border: 3px solid var(--color-primary);
+    object-fit: cover;
+    background-color: #f0f0f0;
+}
+
+.userInfo {
+    margin-bottom: 2rem;
+}
+
+.userName {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--color-text);
+    margin-bottom: 0.5rem;
+}
+
+.userEmail {
+    color: var(--color-text-light);
+    font-size: 1.1rem;
+}
+
+.userRole {
+    display: inline-block;
+    background-color: var(--color-secondary);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-top: 0.5rem;
+}
+
+.configurator {
+    background-color: #f9f9f9;
+    padding: 1.5rem;
+    border-radius: 15px;
+    width: 100%;
+    max-width: 500px;
+    margin-bottom: 2rem;
+}
+
+.configTitle {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--color-text);
+}
+
+.configSection {
+    margin-bottom: 1rem;
+    text-align: left;
+}
+
+.configSection label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--color-text-light);
+}
+
+.options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.optionBtn {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 20px;
+    background: white;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.optionBtn:hover {
+    border-color: var(--color-primary);
+}
+
+.optionBtn.active {
+    background-color: var(--color-primary);
+    color: var(--color-text-dark);
+    border-color: var(--color-primary);
+}
+
+.saveButton {
+    width: 100%;
+    padding: 1rem;
+    background-color: var(--color-secondary);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.2s;
+    margin-top: 1rem;
+}
+
+.saveButton:hover {
+    background-color: var(--color-secondary-dark);
+    transform: translateY(-2px);
+}
+
+.stats {
+    display: flex;
+    gap: 3rem;
+    margin-bottom: 2rem;
+}
+
+.statItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.statValue {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--color-primary-dark);
+}
+
+.statLabel {
+    color: var(--color-text-light);
+    font-weight: 600;
+}
+
+.logoutButton {
+    background-color: transparent;
+    border: 2px solid #ff4d4d;
+    color: #ff4d4d;
+    padding: 0.75rem 2rem;
+    border-radius: 12px;
+    font-weight: 700;
+    transition: all 0.2s;
+}
+
+.logoutButton:hover {
+    background-color: #ff4d4d;
+    color: white;
+}
+
+.sectionTitle {
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    color: var(--color-text);
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.emptyState {
+    text-align: center;
+    padding: 4rem 2rem;
+    background-color: var(--color-surface);
+    border-radius: 20px;
+}
+
+.emptyText {
+    font-size: 1.2rem;
+    color: var(--color-text-light);
+    margin-bottom: 1.5rem;
+}
+
+.createButton {
+    display: inline-block;
+    background-color: var(--color-primary);
+    color: var(--color-text-dark);
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: transform 0.2s;
+}
+
+.createButton:hover {
+    transform: translateY(-2px);
+}

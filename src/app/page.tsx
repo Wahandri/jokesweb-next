@@ -9,12 +9,17 @@ import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
 
-export default async function Home() {
+export default async function Home({ searchParams }: { searchParams: Promise<{ search?: string }> }) {
   await dbConnect();
   const session = await getServerSession(authOptions);
+  const params = await searchParams;
 
   // Fetch jokes sorted by creation date (newest first)
-  const jokes = await Joke.find().sort({ createdAt: -1 }).lean();
+  let query = {};
+  if (params.search) {
+    query = { text: { $regex: params.search, $options: "i" } };
+  }
+  const jokes = await Joke.find(query).sort({ createdAt: -1 }).lean();
 
   let userFavorites: string[] = [];
   if (session && session.user && session.user.email) {

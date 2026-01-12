@@ -11,7 +11,26 @@ export async function POST(req) {
 
         if (!username || !email || !password) {
             return NextResponse.json(
-                { ok: false, error: "All fields are required" },
+                { ok: false, error: "Todos los campos son obligatorios" },
+                { status: 400 }
+            );
+        }
+
+        // Validate Email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return NextResponse.json(
+                { ok: false, error: "Formato de email inválido" },
+                { status: 400 }
+            );
+        }
+
+        // Validate Password
+        // At least 8 chars, 1 uppercase, 1 number
+        const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+        if (!passwordRegex.test(password)) {
+            return NextResponse.json(
+                { ok: false, error: "La contraseña debe tener al menos 8 caracteres, una mayúscula y un número" },
                 { status: 400 }
             );
         }
@@ -20,7 +39,7 @@ export async function POST(req) {
         const existingUser = await User.findOne({ $or: [{ email }, { username }] });
         if (existingUser) {
             return NextResponse.json(
-                { ok: false, error: "Username or email already exists" },
+                { ok: false, error: "El usuario o email ya existe" },
                 { status: 400 }
             );
         }

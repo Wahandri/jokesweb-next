@@ -65,33 +65,26 @@ export default function CreateJokePage() {
     return (
         <div className={styles.container}>
             <div className={styles.card}>
-                <h1 className={styles.title}>Añadir Chiste</h1>
+                <h1 className={styles.title}>Crear Nuevo Chiste</h1>
                 <form onSubmit={handleSubmit} className={styles.form}>
-                    <textarea
-                        className={styles.textarea}
-                        rows={5}
-                        placeholder="Escribe tu chiste aquí (máximo 240 caracteres)"
-                        value={jokeText}
-                        onChange={handleTextAreaChange}
-                        required
-                    />
-                    <div className={styles.charCountContainer}>
-                        <span
-                            style={{
-                                color: getCharCountColor(),
-                                backgroundColor: "aliceblue",
-                                borderRadius: "10px",
-                                padding: "2px 8px",
-                                fontWeight: "bold",
-                            }}
-                        >
-                            {jokeText.length}/{charLimit}
-                        </span>
-                    </div>
-                    {message && <p className={styles.success}>{message}</p>}
                     {error && <p className={styles.error}>{error}</p>}
+                    <div className={styles.inputGroup}>
+                        <label htmlFor="text">Escribe tu chiste aquí:</label>
+                        <textarea
+                            id="text"
+                            value={jokeText}
+                            onChange={handleTextAreaChange}
+                            required
+                            className={styles.textarea}
+                            placeholder="¿Por qué el desarrollador cruzó la calle?..."
+                            rows={5}
+                        />
+                        <div style={{ textAlign: 'right', fontSize: '0.8rem', color: getCharCountColor() }}>
+                            {jokeText.length}/{charLimit}
+                        </div>
+                    </div>
                     <button type="submit" className={styles.button}>
-                        Añadir Chiste
+                        Publicar Chiste
                     </button>
                 </form>
             </div>
