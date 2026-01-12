@@ -1,13 +1,13 @@
 import { getServerSession } from "next-auth";
-import Link from "next/link";
 import dbConnect from "@/lib/mongodb";
 import Joke from "@/models/Joke";
 import User from "@/models/User";
 import JokeCard from "@/components/JokeCard/JokeCard";
+import Hero from "@/components/Hero/Hero";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import styles from "./page.module.css";
 
-export const dynamic = "force-dynamic"; // Ensure fresh data on every request
+export const dynamic = "force-dynamic";
 
 export default async function Home() {
   await dbConnect();
@@ -16,8 +16,8 @@ export default async function Home() {
   // Fetch jokes sorted by creation date (newest first)
   const jokes = await Joke.find().sort({ createdAt: -1 }).lean();
 
-  let userFavorites = [];
-  if (session) {
+  let userFavorites: string[] = [];
+  if (session && session.user && session.user.email) {
     const user = await User.findOne({ email: session.user.email });
     if (user) {
       userFavorites = user.favoriteJokes.map((id: any) => id.toString());
@@ -25,7 +25,7 @@ export default async function Home() {
   }
 
   // Serialize the _id and other objectIds to strings for passing to client component
-  const serializedJokes = jokes.map(joke => ({
+  const serializedJokes = jokes.map((joke: any) => ({
     ...joke,
     _id: joke._id.toString(),
     userScores: joke.userScores?.map((s: any) => ({ ...s, _id: s._id?.toString() })) || [],
@@ -34,26 +34,17 @@ export default async function Home() {
   }));
 
   return (
-    <div className={styles.container}>
-      <h1 className={styles.title}>Últimos Chistes</h1>
-      {serializedJokes.length === 0 ? (
-        <div className={styles.noJokes}>
-          <p>No hay chistes todavía.</p>
-          <Link href="/create-joke" className={styles.createButton}>
-            ¡Sé el primero en crear uno!
-          </Link>
-        </div>
-      ) : (
-        <div className={styles.grid}>
-          {serializedJokes.map((joke) => (
-            <JokeCard
-              key={joke._id}
-              joke={joke}
-              isFavoriteInitial={userFavorites.includes(joke._id)}
-            />
-          ))}
-        </div>
-      )}
+    <div>
+      <Hero />
+      <div className={styles.grid}>
+        {serializedJokes.map((joke) => (
+          <JokeCard
+            key={joke._id}
+            joke={joke}
+            isFavoriteInitial={userFavorites.includes(joke._id)}
+          />
+        ))}
+      </div>
     </div>
   );
 }

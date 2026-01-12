@@ -1,7 +1,6 @@
 import "./globals.css";
 import Providers from "@/components/Providers";
 import Navbar from "@/components/Navbar/Navbar";
-import Sidebar from "@/components/Sidebar/Sidebar";
 
 export const metadata = {
   title: "JokesWeb Next",
@@ -14,8 +13,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <Providers>
           <Navbar />
-          <Sidebar />
-          <main style={{ padding: "2rem", minHeight: "calc(100vh - 80px)" }}>
+          <main style={{
+            maxWidth: "1200px",
+            margin: "0 auto",
+            padding: "2rem",
+            minHeight: "calc(100vh - 80px)"
+          }}>
             {children}
           </main>
         </Providers>

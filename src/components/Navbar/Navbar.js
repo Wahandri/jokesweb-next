@@ -24,31 +24,33 @@ export default function Navbar() {
             </div>
             <div className={styles.links}>
                 <Link href="/" className={styles.link}>
-                    Inicio
+                    Jokes
                 </Link>
                 <Link href="/top" className={styles.link}>
-                    Top 10
+                    Top Rated
                 </Link>
-                {session && (
-                    <Link href="/create-joke" className={styles.link}>
-                        Crear Chiste
+                {session ? (
+                    <Link href="/create-joke" className={styles.submitButton}>
+                        Submit Joke
+                    </Link>
+                ) : (
+                    <Link href="/auth/login" className={styles.link}>
+                        Login
                     </Link>
                 )}
-                <Link href="/favorites" className={styles.link}>
-                    Mis Favoritos
-                </Link>
             </div>
             <div className={styles.auth}>
-                {session ? (
+                {session && (
                     <div className={styles.userMenu}>
                         <span className={styles.userName}>Hola, {session.user.name}</span>
                         <button onClick={() => signOut()} className={styles.logoutButton}>
-                            Cerrar Sesión
+                            Logout
                         </button>
                     </div>
-                ) : (
-                    <Link href="/auth/login" className={styles.loginButton}>
-                        Login
+                )}
+                {!session && (
+                    <Link href="/create-joke" className={styles.submitButton}>
+                        Submit Joke
                     </Link>
                 )}
             </div>

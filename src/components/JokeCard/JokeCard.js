@@ -92,42 +92,58 @@ export default function JokeCard({ joke, isFavoriteInitial = false }) {
     return (
         <div className={styles.card}>
             <div className={styles.header}>
-                <span className={styles.author}>Autor: {joke.author}</span>
-                {session && (
-                    <button onClick={handleFavorite} className={styles.favButton}>
-                        <Image
-                            src={isFavorite ? "/estrella.png" : "/emptyStarIcon.png"}
-                            alt="Favorite"
-                            width={24}
-                            height={24}
-                        />
-                    </button>
-                )}
+                <div className={styles.userInfo}>
+                    <Image
+                        src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${joke.author}`}
+                        alt={joke.author}
+                        width={40}
+                        height={40}
+                        className={styles.avatar}
+                    />
+                    <div className={styles.userMeta}>
+                        <span className={styles.author}>@{joke.author}</span>
+                        <span className={styles.date}>2h ago</span>
+                    </div>
+                </div>
+                <div className={styles.categoryTag}>
+                    <span>Programming</span>
+                </div>
             </div>
 
-            <p className={styles.text}>{joke.text}</p>
+            <div className={styles.jokeContent}>
+                <p className={styles.text}>{joke.text}</p>
+            </div>
 
             <div className={styles.footer}>
-                <div className={styles.scoreContainer}>
-                    <Image
-                        src={getScoreImage(score)}
-                        alt={`Score: ${score}`}
-                        width={100}
-                        height={20}
-                        className={styles.scoreImage}
-                    />
-                    <div className={styles.voting}>
-                        {[1, 2, 3, 4, 5].map((num) => (
-                            <button
-                                key={num}
-                                onClick={() => handleVote(num)}
-                                className={`${styles.voteBtn} ${userScore === num ? styles.selected : ''}`}
-                                title={`Votar ${num}`}
-                            >
-                                ★
-                            </button>
+                <div className={styles.rating}>
+                    <div className={styles.stars}>
+                        {[1, 2, 3, 4, 5].map((star) => (
+                            <span key={star} style={{ color: star <= Math.round(score) ? '#FFD700' : '#E0E0E0' }}>★</span>
                         ))}
                     </div>
+                    <span className={styles.scoreValue}>{score.toFixed(1)}</span>
+                </div>
+
+                <div className={styles.actions}>
+                    {session && (
+                        <button onClick={handleFavorite} className={styles.actionButton}>
+                            <Image
+                                src={isFavorite ? "/estrella.png" : "/emptyStarIcon.png"} // Ideally use SVGs or icons
+                                alt="Favorite"
+                                width={20}
+                                height={20}
+                            />
+                        </button>
+                    )}
+                    <button className={styles.actionButton}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="18" cy="5" r="3"></circle>
+                            <circle cx="6" cy="12" r="3"></circle>
+                            <circle cx="18" cy="19" r="3"></circle>
+                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                        </svg>
+                    </button>
                 </div>
             </div>
         </div>
