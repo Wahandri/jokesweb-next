@@ -29,6 +29,11 @@ export default function Navbar() {
                 <Link href="/top" className={styles.link}>
                     Top 10
                 </Link>
+                {session && (
+                    <Link href="/create-joke" className={styles.link}>
+                        Crear Chiste
+                    </Link>
+                )}
                 <Link href="/favorites" className={styles.link}>
                     Mis Favoritos
                 </Link>

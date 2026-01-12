@@ -5,13 +5,13 @@ import Image from "next/image";
 import { useSession } from "next-auth/react";
 import styles from "./JokeCard.module.css";
 
-export default function JokeCard({ joke }) {
+export default function JokeCard({ joke, isFavoriteInitial = false }) {
     const { data: session } = useSession();
     const [score, setScore] = useState(joke.score);
     const [userScore, setUserScore] = useState(
         joke.userScores?.find((s) => s.email === session?.user?.email)?.score || 0
     );
-    const [isFavorite, setIsFavorite] = useState(false); // Initial state should ideally come from props if possible, but for now we might fetch or just toggle
+    const [isFavorite, setIsFavorite] = useState(isFavoriteInitial);
 
     // Calculate which score image to show based on average score
     const getScoreImage = (currentScore) => {
@@ -95,7 +95,12 @@ export default function JokeCard({ joke }) {
                 <span className={styles.author}>Autor: {joke.author}</span>
                 {session && (
                     <button onClick={handleFavorite} className={styles.favButton}>
-                        <Image src="/estrella.png" alt="Favorite" width={24} height={24} />
+                        <Image
+                            src={isFavorite ? "/estrella.png" : "/emptyStarIcon.png"}
+                            alt="Favorite"
+                            width={24}
+                            height={24}
+                        />
                     </button>
                 )}
             </div>

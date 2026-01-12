@@ -53,11 +53,14 @@ export default function FavoritesPage() {
                 <div className={styles.emptyState}>
                     <p>Aún no tienes chistes favoritos.</p>
                     <p>¡Explora la lista y guarda los que más te gusten!</p>
+                    <Link href="/" className={styles.createButton}>
+                        Ver chistes
+                    </Link>
                 </div>
             ) : (
                 <div className={styles.grid}>
                     {favorites.map((joke) => (
-                        <JokeCard key={joke._id} joke={joke} />
+                        <JokeCard key={joke._id} joke={joke} isFavoriteInitial={true} />
                     ))}
                 </div>
             )}
