@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useSession } from "next-auth/react";
 import styles from "./JokeCard.module.css";
 import UserAvatar from "../UserAvatar/UserAvatar";
+import Modal from "../Modal/Modal";
 
 export default function JokeCard({
     joke,
@@ -16,6 +17,12 @@ export default function JokeCard({
     const [score, setScore] = useState(joke.score ?? 0);
     const [userScore, setUserScore] = useState(0);
     const [isFavorite, setIsFavorite] = useState(isFavoriteInitial);
+    const [modal, setModal] = useState({
+        open: false,
+        title: "",
+        message: "",
+        variant: "info",
+    });
 
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [author, setAuthor] = useState(joke.author);
@@ -73,8 +80,23 @@ export default function JokeCard({
         return "/score4.png";
     };
 
+    const showModal = (title, message, variant = "info") => {
+        setModal({ open: true, title, message, variant });
+    };
+
+    const closeModal = () => {
+        setModal((prev) => ({ ...prev, open: false }));
+    };
+
     const handleVote = async (newScore) => {
-        if (!session) return alert("Inicia sesión para votar");
+        if (!session) {
+            showModal(
+                "Necesitas iniciar sesión",
+                "Inicia sesión para poder votar los chistes.",
+                "info"
+            );
+            return;
+        }
 
         try {
             const res = await fetch(`/api/jokes/${joke._id}/score`, {
@@ -96,15 +118,31 @@ export default function JokeCard({
                 }
             } else {
                 const errorData = await res.json();
-                alert(errorData?.error || "No se pudo registrar el voto");
+                showModal(
+                    "No se pudo registrar el voto",
+                    errorData?.error || "Inténtalo de nuevo más tarde.",
+                    "error"
+                );
             }
         } catch (error) {
             console.error("Error voting:", error);
+            showModal(
+                "Error inesperado",
+                "Ocurrió un problema al registrar tu voto.",
+                "error"
+            );
         }
     };
 
     const handleFavorite = async () => {
-        if (!session) return alert("Inicia sesión para guardar favoritos");
+        if (!session) {
+            showModal(
+                "Necesitas iniciar sesión",
+                "Inicia sesión para guardar favoritos.",
+                "info"
+            );
+            return;
+        }
 
         try {
             const res = await fetch(`/api/jokes/${joke._id}/favorite`, {
@@ -119,10 +157,27 @@ export default function JokeCard({
                 if (typeof onFavoriteChange === "function") {
                     onFavoriteChange(joke._id, nextIsFavorite);
                 }
-                alert("Favorito actualizado!");
+                showModal(
+                    "Favorito actualizado",
+                    nextIsFavorite
+                        ? "Este chiste se guardó en tus favoritos."
+                        : "Este chiste se eliminó de tus favoritos.",
+                    "success"
+                );
+            } else {
+                showModal(
+                    "No se pudo actualizar",
+                    "Inténtalo de nuevo más tarde.",
+                    "error"
+                );
             }
         } catch (error) {
             console.error("Error favorites:", error);
+            showModal(
+                "Error inesperado",
+                "Ocurrió un problema al guardar el favorito.",
+                "error"
+            );
         }
     };
 
@@ -149,87 +204,96 @@ export default function JokeCard({
     const avatarConfig = author?.avatarConfig || null;
 
     return (
-        <div className={styles.card}>
-            <div className={styles.header}>
-                <div className={styles.userInfo}>
-                    <UserAvatar
-                        username={avatarUsername}
-                        avatarConfig={avatarConfig}
-                        size={40}
-                        className={styles.avatar}
-                        shape="circle"
-                    />
-                    <div className={styles.userMeta}>
-                        <span className={styles.author}>@{avatarUsername}</span>
-                        <span className={styles.date}>
-                            {new Date(joke.createdAt).toLocaleDateString("es-ES")}
-                        </span>
+        <>
+            <div className={styles.card}>
+                <div className={styles.header}>
+                    <div className={styles.userInfo}>
+                        <UserAvatar
+                            username={avatarUsername}
+                            avatarConfig={avatarConfig}
+                            size={40}
+                            className={styles.avatar}
+                            shape="circle"
+                        />
+                        <div className={styles.userMeta}>
+                            <span className={styles.author}>@{avatarUsername}</span>
+                            <span className={styles.date}>
+                                {new Date(joke.createdAt).toLocaleDateString("es-ES")}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className={styles.jokeContent}>
+                    <p className={styles.text}>{joke.text}</p>
+                </div>
+
+                <div className={styles.footer}>
+                    <div className={styles.rating}>
+                        {!userScore && (
+                            <div className={styles.stars}>
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                    <button
+                                        key={star}
+                                        onClick={() => handleVote(star)}
+                                        className={styles.starButton}
+                                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                                    >
+                                        <span style={{ color: star <= Math.round(score) ? '#FFD700' : '#E0E0E0', fontSize: '1.2rem' }}>★</span>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                        <span className={styles.scoreValue}>{score.toFixed(1)}</span>
+                    </div>
+
+                    <div className={styles.actions}>
+                        <button
+                            onClick={handleSpeak}
+                            className={`${styles.actionButton} ${isSpeaking ? styles.speaking : ''}`}
+                            aria-label="Escuchar chiste"
+                            title="Escuchar chiste"
+                        >
+                            {isSpeaking ? '🔊' : '🔈'}
+                        </button>
+                        {session && (
+                            <button onClick={handleFavorite} className={styles.actionButton}>
+                                <Image
+                                    src={isFavorite ? "/estrella.png" : "/emptyStarIcon.png"} // Ideally use SVGs or icons
+                                    alt="Favorite"
+                                    width={20}
+                                    height={20}
+                                />
+                            </button>
+                        )}
+                        <button className={styles.actionButton}>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="18" cy="5" r="3"></circle>
+                                <circle cx="6" cy="12" r="3"></circle>
+                                <circle cx="18" cy="19" r="3"></circle>
+                                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                            </svg>
+                        </button>
+                        {onDelete && (
+                            <button
+                                onClick={() => onDelete(joke._id)}
+                                className={`${styles.actionButton} ${styles.deleteButton}`}
+                                title="Eliminar chiste"
+                            >
+                                🗑️
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
-
-            <div className={styles.jokeContent}>
-                <p className={styles.text}>{joke.text}</p>
-            </div>
-
-            <div className={styles.footer}>
-                <div className={styles.rating}>
-                    {!userScore && (
-                        <div className={styles.stars}>
-                            {[1, 2, 3, 4, 5].map((star) => (
-                                <button
-                                    key={star}
-                                    onClick={() => handleVote(star)}
-                                    className={styles.starButton}
-                                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                                >
-                                    <span style={{ color: star <= Math.round(score) ? '#FFD700' : '#E0E0E0', fontSize: '1.2rem' }}>★</span>
-                                </button>
-                            ))}
-                        </div>
-                    )}
-                    <span className={styles.scoreValue}>{score.toFixed(1)}</span>
-                </div>
-
-                <div className={styles.actions}>
-                    <button
-                        onClick={handleSpeak}
-                        className={`${styles.actionButton} ${isSpeaking ? styles.speaking : ''}`}
-                        aria-label="Escuchar chiste"
-                        title="Escuchar chiste"
-                    >
-                        {isSpeaking ? '🔊' : '🔈'}
-                    </button>
-                    {session && (
-                        <button onClick={handleFavorite} className={styles.actionButton}>
-                            <Image
-                                src={isFavorite ? "/estrella.png" : "/emptyStarIcon.png"} // Ideally use SVGs or icons
-                                alt="Favorite"
-                                width={20}
-                                height={20}
-                            />
-                        </button>
-                    )}
-                    <button className={styles.actionButton}>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <circle cx="18" cy="5" r="3"></circle>
-                            <circle cx="6" cy="12" r="3"></circle>
-                            <circle cx="18" cy="19" r="3"></circle>
-                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-                            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-                        </svg>
-                    </button>
-                    {onDelete && (
-                        <button
-                            onClick={() => onDelete(joke._id)}
-                            className={`${styles.actionButton} ${styles.deleteButton}`}
-                            title="Eliminar chiste"
-                        >
-                            🗑️
-                        </button>
-                    )}
-                </div>
-            </div>
-        </div>
+            <Modal
+                open={modal.open}
+                title={modal.title}
+                message={modal.message}
+                variant={modal.variant}
+                onClose={closeModal}
+            />
+        </>
     );
 }

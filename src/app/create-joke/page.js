@@ -4,11 +4,16 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import styles from "./create-joke.module.css";
+import Modal from "@/components/Modal/Modal";
 
 export default function CreateJokePage() {
     const [jokeText, setJokeText] = useState("");
-    const [message, setMessage] = useState("");
-    const [error, setError] = useState("");
+    const [modal, setModal] = useState({
+        open: false,
+        title: "",
+        message: "",
+        variant: "info",
+    });
     const router = useRouter();
     const { data: session, status } = useSession();
 
@@ -19,6 +24,14 @@ export default function CreateJokePage() {
     }
 
     const charLimit = 240;
+
+    const showModal = (title, message, variant = "info") => {
+        setModal({ open: true, title, message, variant });
+    };
+
+    const closeModal = () => {
+        setModal((prev) => ({ ...prev, open: false }));
+    };
 
     const handleTextAreaChange = (e) => {
         if (e.target.value.length <= charLimit) {
@@ -35,8 +48,6 @@ export default function CreateJokePage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setMessage("");
-        setError("");
 
         try {
             const res = await fetch("/api/jokes", {
@@ -48,46 +59,66 @@ export default function CreateJokePage() {
             const data = await res.json();
 
             if (res.ok) {
-                setMessage("¡Chiste creado con éxito!");
+                showModal(
+                    "¡Chiste publicado!",
+                    "Tu chiste se creó con éxito.",
+                    "success"
+                );
                 setJokeText("");
                 setTimeout(() => {
                     router.push("/");
                     router.refresh();
                 }, 1500);
             } else {
-                setError(data.error || "Error al crear el chiste");
+                showModal(
+                    "No se pudo crear el chiste",
+                    data.error || "Inténtalo de nuevo más tarde.",
+                    "error"
+                );
             }
         } catch (err) {
-            setError("Ocurrió un error. Inténtalo de nuevo.");
+            showModal(
+                "Error inesperado",
+                "Ocurrió un error. Inténtalo de nuevo.",
+                "error"
+            );
         }
     };
 
     return (
-        <div className={styles.container}>
-            <div className={styles.card}>
-                <h1 className={styles.title}>Crear Nuevo Chiste</h1>
-                <form onSubmit={handleSubmit} className={styles.form}>
-                    {error && <p className={styles.error}>{error}</p>}
-                    <div className={styles.inputGroup}>
-                        <label htmlFor="text">Escribe tu chiste aquí:</label>
-                        <textarea
-                            id="text"
-                            value={jokeText}
-                            onChange={handleTextAreaChange}
-                            required
-                            className={styles.textarea}
-                            placeholder="¿Por qué el desarrollador cruzó la calle?..."
-                            rows={5}
-                        />
-                        <div style={{ textAlign: 'right', fontSize: '0.8rem', color: getCharCountColor() }}>
-                            {jokeText.length}/{charLimit}
+        <>
+            <div className={styles.container}>
+                <div className={styles.card}>
+                    <h1 className={styles.title}>Crear Nuevo Chiste</h1>
+                    <form onSubmit={handleSubmit} className={styles.form}>
+                        <div className={styles.inputGroup}>
+                            <label htmlFor="text">Escribe tu chiste aquí:</label>
+                            <textarea
+                                id="text"
+                                value={jokeText}
+                                onChange={handleTextAreaChange}
+                                required
+                                className={styles.textarea}
+                                placeholder="¿Por qué el desarrollador cruzó la calle?..."
+                                rows={5}
+                            />
+                            <div style={{ textAlign: 'right', fontSize: '0.8rem', color: getCharCountColor() }}>
+                                {jokeText.length}/{charLimit}
+                            </div>
                         </div>
-                    </div>
-                    <button type="submit" className={styles.button}>
-                        Publicar Chiste
-                    </button>
-                </form>
+                        <button type="submit" className={styles.button}>
+                            Publicar Chiste
+                        </button>
+                    </form>
+                </div>
             </div>
-        </div>
+            <Modal
+                open={modal.open}
+                title={modal.title}
+                message={modal.message}
+                variant={modal.variant}
+                onClose={closeModal}
+            />
+        </>
     );
 }
