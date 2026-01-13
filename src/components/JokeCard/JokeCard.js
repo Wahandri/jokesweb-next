@@ -20,6 +20,9 @@ export default function JokeCard({
 
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [author, setAuthor] = useState(joke.author);
+    const authorUsername = author?.username;
+    const authorEmail = author?.email;
+    const authorImage = author?.image;
 
     useEffect(() => {
         setAuthor(joke.author);
@@ -29,21 +32,28 @@ export default function JokeCard({
         if (!session?.user || !author) return;
 
         const isCurrentUser =
-            (author.username && author.username === session.user.username) ||
-            (author.email && author.email === session.user.email);
+            (authorUsername && authorUsername === session.user.username) ||
+            (authorEmail && authorEmail === session.user.email);
 
         if (!isCurrentUser) return;
 
         const newImage = session.user.image;
 
         // Solo actualizamos si la imagen realmente cambia
-        if (newImage && author.image !== newImage) {
+        if (newImage && authorImage !== newImage) {
             setAuthor((prev) => ({
                 ...prev,
                 image: newImage,
             }));
         }
-    }, [session?.user?.image, session?.user?.username, session?.user?.email, author?.username, author?.email, author?.image]);
+    }, [
+        session?.user?.image,
+        session?.user?.username,
+        session?.user?.email,
+        authorUsername,
+        authorEmail,
+        authorImage,
+    ]);
 
     // Calculate which score image to show based on average score
     const getScoreImage = (currentScore) => {
