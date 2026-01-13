@@ -5,7 +5,12 @@ import Image from "next/image";
 import { useSession } from "next-auth/react";
 import styles from "./JokeCard.module.css";
 
-export default function JokeCard({ joke, isFavoriteInitial = false, onDelete = undefined }) {
+export default function JokeCard({
+    joke,
+    isFavoriteInitial = false,
+    onDelete = undefined,
+    onFavoriteChange = undefined,
+}) {
     const { data: session } = useSession();
     const [score, setScore] = useState(joke.score ?? 0);
     const [userScore, setUserScore] = useState(
@@ -81,7 +86,11 @@ export default function JokeCard({ joke, isFavoriteInitial = false, onDelete = u
             });
 
             if (res.ok) {
-                setIsFavorite(!isFavorite);
+                const nextIsFavorite = !isFavorite;
+                setIsFavorite(nextIsFavorite);
+                if (typeof onFavoriteChange === "function") {
+                    onFavoriteChange(joke._id, nextIsFavorite);
+                }
                 alert("Favorito actualizado!");
             }
         } catch (error) {

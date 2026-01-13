@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 import JokeCard from "@/components/JokeCard/JokeCard";
 import styles from "./favorites.module.css";
 
@@ -11,6 +12,12 @@ export default function FavoritesPage() {
     const [loading, setLoading] = useState(true);
     const router = useRouter();
     const { data: session, status } = useSession();
+
+    const handleFavoriteChange = (jokeId, isNowFavorite) => {
+        if (!isNowFavorite) {
+            setFavorites((prev) => prev.filter((j) => j._id !== jokeId));
+        }
+    };
 
     useEffect(() => {
         if (status === "loading") return;
@@ -60,7 +67,12 @@ export default function FavoritesPage() {
             ) : (
                 <div className={styles.grid}>
                     {favorites.map((joke) => (
-                        <JokeCard key={joke._id} joke={joke} isFavoriteInitial={true} />
+                        <JokeCard
+                            key={joke._id}
+                            joke={joke}
+                            isFavoriteInitial={true}
+                            onFavoriteChange={handleFavoriteChange}
+                        />
                     ))}
                 </div>
             )}
