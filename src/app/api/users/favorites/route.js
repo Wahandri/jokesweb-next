@@ -4,6 +4,7 @@ import dbConnect from "@/lib/mongodb";
 import User from "@/models/User";
 import Joke from "@/models/Joke";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { serializeJokesWithAuthorAndScore } from "@/lib/serializeJokes";
 
 export async function GET(req) {
     try {
@@ -34,34 +35,7 @@ export async function GET(req) {
             .sort({ createdAt: -1 })
             .lean();
 
-        const serializedFavorites = jokes.map((joke) => {
-            let authorObj = {
-                username: "Anónimo",
-                image: "https://api.dicebear.com/7.x/avataaars/svg?seed=fallback",
-            };
-
-            if (joke.author) {
-                if (typeof joke.author === "string") {
-                    authorObj = {
-                        username: joke.author,
-                        image: `https://api.dicebear.com/7.x/avataaars/svg?seed=${joke.author}`,
-                    };
-                } else if (joke.author.username) {
-                    authorObj = {
-                        username: joke.author.username,
-                        image:
-                            joke.author.image ||
-                            `https://api.dicebear.com/7.x/avataaars/svg?seed=${joke.author.username}`,
-                    };
-                }
-            }
-
-            return {
-                ...joke,
-                author: authorObj,
-                score: joke.averageRating || joke.score || 0,
-            };
-        });
+        const serializedFavorites = serializeJokesWithAuthorAndScore(jokes);
 
         return NextResponse.json(
             { ok: true, favoriteJokes: serializedFavorites },
