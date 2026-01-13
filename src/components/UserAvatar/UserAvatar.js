@@ -1,7 +1,9 @@
 "use client";
 
 import { BeanHead } from "beanheads";
-import genBeanHeadConfig from "@/lib/genBeanHeadConfig";
+import genBeanHeadConfig, {
+    normalizeBeanHeadConfig,
+} from "@/lib/genBeanHeadConfig";
 
 export default function UserAvatar({
     username,
@@ -12,10 +14,11 @@ export default function UserAvatar({
 }) {
     const name = username || "Usuario";
 
-    const config =
+    const rawConfig =
         avatarConfig && Object.keys(avatarConfig).length > 0
             ? avatarConfig
             : genBeanHeadConfig(name);
+    const config = normalizeBeanHeadConfig(rawConfig, name);
 
     const borderRadius =
         shape === "circle" ? "50%" : shape === "rounded" ? "12px" : "0px";

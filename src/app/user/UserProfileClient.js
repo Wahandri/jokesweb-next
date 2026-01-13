@@ -22,9 +22,11 @@ export default function UserProfileClient({ user, jokes }) {
     const [userData, setUserData] = useState(user);
     const [userJokes, setUserJokes] = useState(jokes);
     const [username, setUsername] = useState(user.username || "");
+    const normalizeConfigForName = (config, name) =>
+        normalizeBeanHeadConfig(config, name || user.username || "Usuario");
     const [avatarConfig, setAvatarConfig] = useState(() => {
         if (user.avatarConfig && Object.keys(user.avatarConfig).length > 0) {
-            return normalizeBeanHeadConfig(
+            return normalizeConfigForName(
                 user.avatarConfig,
                 user.username || "Usuario"
             );
@@ -47,10 +49,7 @@ export default function UserProfileClient({ user, jokes }) {
         setUsername(user.username || "");
         if (user.avatarConfig && Object.keys(user.avatarConfig).length > 0) {
             setAvatarConfig(
-                normalizeBeanHeadConfig(
-                    user.avatarConfig,
-                    user.username || "Usuario"
-                )
+                normalizeConfigForName(user.avatarConfig, user.username || "Usuario")
             );
         } else {
             setAvatarConfig(genBeanHeadConfig(user.username || "Usuario"));
@@ -66,30 +65,48 @@ export default function UserProfileClient({ user, jokes }) {
 
     const totalScore = userJokes.reduce((acc, joke) => acc + (joke.score || 0), 0);
     const averageRating = userJokes.length > 0 ? (totalScore / userJokes.length).toFixed(1) : "0.0";
+    const normalizedAvatarConfig = normalizeConfigForName(
+        avatarConfig,
+        username.trim() || userData.username || "Usuario"
+    );
 
     const handleAvatarChange = (field, value) => {
-        setAvatarConfig((prev) => ({
-            ...prev,
-            [field]: value,
-        }));
+        setAvatarConfig((prev) =>
+            normalizeConfigForName(
+                {
+                    ...prev,
+                    [field]: value,
+                },
+                username.trim() || userData.username || "Usuario"
+            )
+        );
     };
 
     const handleShapeChange = (value) => {
         setShape(value);
-        setAvatarConfig((prev) => ({
-            ...prev,
-            mask: value === "circle",
-        }));
+        setAvatarConfig((prev) =>
+            normalizeConfigForName(
+                {
+                    ...prev,
+                    mask: value === "circle",
+                },
+                username.trim() || userData.username || "Usuario"
+            )
+        );
     };
 
     const saveProfile = async () => {
+        const nextAvatarConfig = normalizeConfigForName(
+            avatarConfig,
+            username.trim() || userData.username || "Usuario"
+        );
         try {
             const res = await fetch("/api/users/profile", {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     username: username.trim() || userData.username,
-                    avatarConfig,
+                    avatarConfig: nextAvatarConfig,
                 }),
             });
 
@@ -107,13 +124,14 @@ export default function UserProfileClient({ user, jokes }) {
                                 author: {
                                     ...j.author,
                                     username: data.user.username,
-                                    avatarConfig: avatarConfig,
+                                    avatarConfig: nextAvatarConfig,
                                 },
                             }
                             : j
                     )
                 );
-                await update({ avatarConfig });
+                setAvatarConfig(nextAvatarConfig);
+                await update({ avatarConfig: nextAvatarConfig });
                 alert("Perfil actualizado correctamente!");
             } else {
                 alert("Error al actualizar el perfil");
@@ -164,7 +182,7 @@ export default function UserProfileClient({ user, jokes }) {
                                 }}
                             >
                                 <BeanHead
-                                    {...avatarConfig}
+                                    {...normalizedAvatarConfig}
                                     mask={shape === "circle"}
                                     style={{ width: "100%", height: "100%" }}
                                 />
@@ -201,7 +219,7 @@ export default function UserProfileClient({ user, jokes }) {
                             <div className={styles.configSection}>
                                 <label>Cuerpo</label>
                                 <select
-                                    value={avatarConfig.body || "chest"}
+                                    value={normalizedAvatarConfig.body || "chest"}
                                     onChange={(e) => handleAvatarChange("body", e.target.value)}
                                     className={styles.select}
                                 >
@@ -215,7 +233,7 @@ export default function UserProfileClient({ user, jokes }) {
                             <div className={styles.configSection}>
                                 <label>Pelo</label>
                                 <select
-                                    value={avatarConfig.hair || "short"}
+                                    value={normalizedAvatarConfig.hair || "short"}
                                     onChange={(e) => handleAvatarChange("hair", e.target.value)}
                                     className={styles.select}
                                 >
@@ -229,7 +247,7 @@ export default function UserProfileClient({ user, jokes }) {
                             <div className={styles.configSection}>
                                 <label>Accesorio</label>
                                 <select
-                                    value={avatarConfig.accessory || "none"}
+                                    value={normalizedAvatarConfig.accessory || "none"}
                                     onChange={(e) =>
                                         handleAvatarChange("accessory", e.target.value)
                                     }
@@ -245,7 +263,7 @@ export default function UserProfileClient({ user, jokes }) {
                             <div className={styles.configSection}>
                                 <label>Ropa</label>
                                 <select
-                                    value={avatarConfig.clothing || "shirt"}
+                                    value={normalizedAvatarConfig.clothing || "shirt"}
                                     onChange={(e) =>
                                         handleAvatarChange("clothing", e.target.value)
                                     }
@@ -273,7 +291,7 @@ export default function UserProfileClient({ user, jokes }) {
                             <div className={styles.configSection}>
                                 <label>Color de pelo</label>
                                 <select
-                                    value={avatarConfig.hairColor || "black"}
+                                    value={normalizedAvatarConfig.hairColor || "black"}
                                     onChange={(e) =>
                                         handleAvatarChange("hairColor", e.target.value)
                                     }
@@ -289,7 +307,7 @@ export default function UserProfileClient({ user, jokes }) {
                             <div className={styles.configSection}>
                                 <label>Color de ropa</label>
                                 <select
-                                    value={avatarConfig.clothingColor || "blue"}
+                                    value={normalizedAvatarConfig.clothingColor || "blue"}
                                     onChange={(e) =>
                                         handleAvatarChange("clothingColor", e.target.value)
                                     }
@@ -305,7 +323,7 @@ export default function UserProfileClient({ user, jokes }) {
                             <div className={styles.configSection}>
                                 <label>Fondo</label>
                                 <select
-                                    value={avatarConfig.circleColor || "#F9C9B6"}
+                                    value={normalizedAvatarConfig.circleColor || "blue"}
                                     onChange={(e) =>
                                         handleAvatarChange("circleColor", e.target.value)
                                     }
@@ -336,7 +354,7 @@ export default function UserProfileClient({ user, jokes }) {
                                 }}
                             >
                                 <BeanHead
-                                    {...avatarConfig}
+                                    {...normalizedAvatarConfig}
                                     mask={shape === "circle"}
                                     style={{ width: "100%", height: "100%" }}
                                 />

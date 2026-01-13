@@ -94,17 +94,7 @@ const MOUTH_OPTIONS = ["smile", "open", "serious", "lips", "sad", "grin"];
 
 const SKIN_TONE_OPTIONS = ["light", "yellow", "brown", "dark", "red", "black"];
 
-const CIRCLE_COLOR_OPTIONS = [
-    "#F9C9B6",
-    "#F4B7B2",
-    "#E0F4FF",
-    "#FFD8A8",
-    "#C1E1C1",
-    "#EAD7C1",
-    "#CDB4DB",
-    "#BDE0FE",
-    "#FFC8DD",
-];
+const CIRCLE_COLOR_OPTIONS = ["blue"];
 
 const LEGACY_BODY_MAP = {
     man: "chest",
@@ -145,25 +135,26 @@ const LEGACY_COLOR_MAP = {
 };
 
 const BEANHEAD_KEYS = [
-    "body",
-    "hair",
-    "hairColor",
-    "clothing",
-    "clothingColor",
-    "accessory",
-    "eyebrows",
+    "skinTone",
     "eyes",
+    "eyebrows",
+    "mouth",
+    "hair",
     "facialHair",
+    "clothing",
+    "accessory",
     "graphic",
     "hat",
-    "hatColor",
-    "lashes",
+    "body",
+    "hairColor",
+    "clothingColor",
+    "circleColor",
     "lipColor",
+    "hatColor",
+    "faceMaskColor",
     "mask",
     "faceMask",
-    "mouth",
-    "skinTone",
-    "circleColor",
+    "lashes",
 ];
 
 const hashString = (value) => {
@@ -204,7 +195,6 @@ const genBeanHeadConfig = (name = "Usuario") => {
     const rng = mulberry32(hashString(safeName));
 
     return {
-        base: true, // Required by BeanHead
         body: pick(rng, BODY_OPTIONS),
         hair: pick(rng, HAIR_OPTIONS),
         hairColor: pick(rng, HAIR_COLOR_OPTIONS),
@@ -234,7 +224,17 @@ const normalizeBeanHeadConfig = (config, name) => {
 
     const hasBeanHeadKey = BEANHEAD_KEYS.some((key) => key in config);
     if (hasBeanHeadKey) {
-        return { ...genBeanHeadConfig(name), ...config };
+        const next = { ...genBeanHeadConfig(name), ...config };
+        if (next.circleColor && isHexColor(next.circleColor)) {
+            next.circleColor = "blue";
+        }
+        const filtered = {};
+        for (const key of BEANHEAD_KEYS) {
+            if (next[key] !== undefined) {
+                filtered[key] = next[key];
+            }
+        }
+        return filtered;
     }
 
     const base = genBeanHeadConfig(name);
@@ -260,13 +260,22 @@ const normalizeBeanHeadConfig = (config, name) => {
         next.clothingColor = mapLegacyColor(config.shirtColor, base.clothingColor);
     }
     if (config.bgColor && isHexColor(config.bgColor)) {
-        next.circleColor = config.bgColor;
+        next.circleColor = "blue";
+    }
+    if (config.circleColor && isHexColor(config.circleColor)) {
+        next.circleColor = "blue";
     }
     if (config.shape && config.shape in LEGACY_SHAPE_MAP) {
         next.mask = LEGACY_SHAPE_MAP[config.shape];
     }
 
-    return next;
+    const filtered = {};
+    for (const key of BEANHEAD_KEYS) {
+        if (next[key] !== undefined) {
+            filtered[key] = next[key];
+        }
+    }
+    return filtered;
 };
 
 export {
