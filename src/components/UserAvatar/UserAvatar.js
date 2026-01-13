@@ -1,9 +1,11 @@
 "use client";
 
-import { BeanHead } from "beanheads";
+import BeanHeadDefault, { BeanHead as BeanHeadNamed } from "beanheads";
 import genBeanHeadConfig, {
     normalizeBeanHeadConfig,
 } from "@/lib/genBeanHeadConfig";
+
+const BeanHead = BeanHeadNamed ?? BeanHeadDefault;
 
 export default function UserAvatar({
     username,

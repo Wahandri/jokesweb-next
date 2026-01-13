@@ -3,19 +3,30 @@
 import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
-import { BeanHead } from "beanheads";
+import BeanHeadDefault, { BeanHead as BeanHeadNamed } from "beanheads";
 import JokeCard from "@/components/JokeCard/JokeCard";
 import genBeanHeadConfig, {
     ACCESSORY_OPTIONS,
     BODY_OPTIONS,
     CLOTHING_OPTIONS,
     CLOTHING_COLOR_OPTIONS,
+    EYEBROWS_OPTIONS,
+    EYES_OPTIONS,
+    FACIAL_HAIR_OPTIONS,
+    GRAPHIC_OPTIONS,
     HAIR_OPTIONS,
     HAIR_COLOR_OPTIONS,
+    HAT_OPTIONS,
+    HAT_COLOR_OPTIONS,
+    LIP_COLOR_OPTIONS,
+    MOUTH_OPTIONS,
+    SKIN_TONE_OPTIONS,
     CIRCLE_COLOR_OPTIONS,
     normalizeBeanHeadConfig,
 } from "@/lib/genBeanHeadConfig";
 import styles from "./user.module.css";
+
+const BeanHead = BeanHeadNamed ?? BeanHeadDefault;
 
 export default function UserProfileClient({ user, jokes }) {
     const { update } = useSession();
@@ -245,6 +256,50 @@ export default function UserProfileClient({ user, jokes }) {
                                 </select>
                             </div>
                             <div className={styles.configSection}>
+                                <label>Ceja</label>
+                                <select
+                                    value={normalizedAvatarConfig.eyebrows || "raised"}
+                                    onChange={(e) =>
+                                        handleAvatarChange("eyebrows", e.target.value)
+                                    }
+                                    className={styles.select}
+                                >
+                                    {EYEBROWS_OPTIONS.map((option) => (
+                                        <option key={option} value={option}>
+                                            {option}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className={styles.configSection}>
+                                <label>Ojos</label>
+                                <select
+                                    value={normalizedAvatarConfig.eyes || "normal"}
+                                    onChange={(e) => handleAvatarChange("eyes", e.target.value)}
+                                    className={styles.select}
+                                >
+                                    {EYES_OPTIONS.map((option) => (
+                                        <option key={option} value={option}>
+                                            {option}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className={styles.configSection}>
+                                <label>Boca</label>
+                                <select
+                                    value={normalizedAvatarConfig.mouth || "smile"}
+                                    onChange={(e) => handleAvatarChange("mouth", e.target.value)}
+                                    className={styles.select}
+                                >
+                                    {MOUTH_OPTIONS.map((option) => (
+                                        <option key={option} value={option}>
+                                            {option}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className={styles.configSection}>
                                 <label>Accesorio</label>
                                 <select
                                     value={normalizedAvatarConfig.accessory || "none"}
@@ -261,6 +316,22 @@ export default function UserProfileClient({ user, jokes }) {
                                 </select>
                             </div>
                             <div className={styles.configSection}>
+                                <label>Vello facial</label>
+                                <select
+                                    value={normalizedAvatarConfig.facialHair || "none"}
+                                    onChange={(e) =>
+                                        handleAvatarChange("facialHair", e.target.value)
+                                    }
+                                    className={styles.select}
+                                >
+                                    {FACIAL_HAIR_OPTIONS.map((option) => (
+                                        <option key={option} value={option}>
+                                            {option}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className={styles.configSection}>
                                 <label>Ropa</label>
                                 <select
                                     value={normalizedAvatarConfig.clothing || "shirt"}
@@ -270,6 +341,36 @@ export default function UserProfileClient({ user, jokes }) {
                                     className={styles.select}
                                 >
                                     {CLOTHING_OPTIONS.map((option) => (
+                                        <option key={option} value={option}>
+                                            {option}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className={styles.configSection}>
+                                <label>Gráfico</label>
+                                <select
+                                    value={normalizedAvatarConfig.graphic || "none"}
+                                    onChange={(e) =>
+                                        handleAvatarChange("graphic", e.target.value)
+                                    }
+                                    className={styles.select}
+                                >
+                                    {GRAPHIC_OPTIONS.map((option) => (
+                                        <option key={option} value={option}>
+                                            {option}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className={styles.configSection}>
+                                <label>Sombrero</label>
+                                <select
+                                    value={normalizedAvatarConfig.hat || "none"}
+                                    onChange={(e) => handleAvatarChange("hat", e.target.value)}
+                                    className={styles.select}
+                                >
+                                    {HAT_OPTIONS.map((option) => (
                                         <option key={option} value={option}>
                                             {option}
                                         </option>
@@ -305,6 +406,22 @@ export default function UserProfileClient({ user, jokes }) {
                                 </select>
                             </div>
                             <div className={styles.configSection}>
+                                <label>Color de sombrero</label>
+                                <select
+                                    value={normalizedAvatarConfig.hatColor || "black"}
+                                    onChange={(e) =>
+                                        handleAvatarChange("hatColor", e.target.value)
+                                    }
+                                    className={styles.select}
+                                >
+                                    {HAT_COLOR_OPTIONS.map((option) => (
+                                        <option key={option} value={option}>
+                                            {option}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className={styles.configSection}>
                                 <label>Color de ropa</label>
                                 <select
                                     value={normalizedAvatarConfig.clothingColor || "blue"}
@@ -314,6 +431,22 @@ export default function UserProfileClient({ user, jokes }) {
                                     className={styles.select}
                                 >
                                     {CLOTHING_COLOR_OPTIONS.map((option) => (
+                                        <option key={option} value={option}>
+                                            {option}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className={styles.configSection}>
+                                <label>Color de labios</label>
+                                <select
+                                    value={normalizedAvatarConfig.lipColor || "pink"}
+                                    onChange={(e) =>
+                                        handleAvatarChange("lipColor", e.target.value)
+                                    }
+                                    className={styles.select}
+                                >
+                                    {LIP_COLOR_OPTIONS.map((option) => (
                                         <option key={option} value={option}>
                                             {option}
                                         </option>
@@ -334,6 +467,70 @@ export default function UserProfileClient({ user, jokes }) {
                                             {option}
                                         </option>
                                     ))}
+                                </select>
+                            </div>
+                            <div className={styles.configSection}>
+                                <label>Tono de piel</label>
+                                <select
+                                    value={normalizedAvatarConfig.skinTone || "light"}
+                                    onChange={(e) =>
+                                        handleAvatarChange("skinTone", e.target.value)
+                                    }
+                                    className={styles.select}
+                                >
+                                    {SKIN_TONE_OPTIONS.map((option) => (
+                                        <option key={option} value={option}>
+                                            {option}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className={styles.configSection}>
+                                <label>Mascarilla</label>
+                                <select
+                                    value={normalizedAvatarConfig.faceMask ? "true" : "false"}
+                                    onChange={(e) =>
+                                        handleAvatarChange(
+                                            "faceMask",
+                                            e.target.value === "true"
+                                        )
+                                    }
+                                    className={styles.select}
+                                >
+                                    <option value="false">No</option>
+                                    <option value="true">Sí</option>
+                                </select>
+                            </div>
+                            <div className={styles.configSection}>
+                                <label>Color de mascarilla</label>
+                                <select
+                                    value={normalizedAvatarConfig.faceMaskColor || "blue"}
+                                    onChange={(e) =>
+                                        handleAvatarChange("faceMaskColor", e.target.value)
+                                    }
+                                    className={styles.select}
+                                >
+                                    {CLOTHING_COLOR_OPTIONS.map((option) => (
+                                        <option key={option} value={option}>
+                                            {option}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className={styles.configSection}>
+                                <label>Pestañas</label>
+                                <select
+                                    value={normalizedAvatarConfig.lashes ? "true" : "false"}
+                                    onChange={(e) =>
+                                        handleAvatarChange(
+                                            "lashes",
+                                            e.target.value === "true"
+                                        )
+                                    }
+                                    className={styles.select}
+                                >
+                                    <option value="false">No</option>
+                                    <option value="true">Sí</option>
                                 </select>
                             </div>
                         </div>
