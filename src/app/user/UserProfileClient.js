@@ -12,6 +12,8 @@ const AVATAR_COLLECTIONS = {
     avataaars: {
         name: "Avataaars",
         url: "https://api.dicebear.com/7.x/avataaars/svg",
+        // Nota: Avataaars (v7) no soporta parámetros de barba o bigote. Ver docs.
+        note: "Nota: Avataaars (v7) no soporta parámetros de barba o bigote.",
         parameters: {
             accessories: {
                 label: "Accesorios",
@@ -140,6 +142,7 @@ const AVATAR_COLLECTIONS = {
     "pixel-art": {
         name: "Pixel Art",
         url: "https://api.dicebear.com/7.x/pixel-art/svg",
+        note: "Nota: Pixel Art (v7) no permite configurar el pelo.",
         parameters: {
             accessories: {
                 label: "Accesorios",
@@ -156,7 +159,15 @@ const AVATAR_COLLECTIONS = {
                     { value: "variant01", label: "Estilo 1", description: "Mirada neutral" },
                     { value: "variant02", label: "Estilo 2", description: "Ojos abiertos" },
                     { value: "variant03", label: "Estilo 3", description: "Guiño" },
-                    { value: "variant04", label: "Estilo 4", description: "Ojos felices" }
+                    { value: "variant04", label: "Estilo 4", description: "Ojos felices" },
+                    { value: "variant05", label: "Estilo 5" },
+                    { value: "variant06", label: "Estilo 6" },
+                    { value: "variant07", label: "Estilo 7" },
+                    { value: "variant08", label: "Estilo 8" },
+                    { value: "variant09", label: "Estilo 9" },
+                    { value: "variant10", label: "Estilo 10" },
+                    { value: "variant11", label: "Estilo 11" },
+                    { value: "variant12", label: "Estilo 12" }
                 ]
             },
             clothing: {
@@ -199,6 +210,23 @@ const AVATAR_COLLECTIONS = {
                     { value: "variant07", label: "Estilo 7", description: "Barba con bigote" },
                     { value: "variant08", label: "Estilo 8", description: "Barba larga" }
                 ]
+            },
+            mouth: {
+                label: "Boca",
+                options: [
+                    { value: "variant01", label: "Boca 1" },
+                    { value: "variant02", label: "Boca 2" },
+                    { value: "variant03", label: "Boca 3" },
+                    { value: "variant04", label: "Boca 4" },
+                    { value: "variant05", label: "Boca 5" },
+                    { value: "variant06", label: "Boca 6" },
+                    { value: "variant07", label: "Boca 7" },
+                    { value: "variant08", label: "Boca 8" },
+                    { value: "variant09", label: "Boca 9" },
+                    { value: "variant10", label: "Boca 10" },
+                    { value: "variant11", label: "Boca 11" },
+                    { value: "variant12", label: "Boca 12" }
+                ]
             }
         }
     },
@@ -209,11 +237,10 @@ const AVATAR_COLLECTIONS = {
             features: {
                 label: "Detalles",
                 options: [
-                    { value: "variant01", label: "Estilo 1", description: "Pecas" },
-                    { value: "variant02", label: "Estilo 2", description: "Marca de nacimiento" },
-                    { value: "variant03", label: "Estilo 3", description: "Cicatriz" },
-                    { value: "variant04", label: "Estilo 4", description: "Mostacho" },
-                    { value: "variant05", label: "Estilo 5", description: "Peca en mejilla" }
+                    { value: "mustache", label: "Bigote" },
+                    { value: "blush", label: "Coloretes" },
+                    { value: "birthmark", label: "Lunar" },
+                    { value: "freckles", label: "Pecas" }
                 ]
             },
             eyes: {
@@ -464,6 +491,11 @@ export default function UserProfileClient({ user, jokes }) {
                                     </option>
                                 ))}
                             </select>
+                            {AVATAR_COLLECTIONS[selectedCollection].note && (
+                                <p className={styles.collectionNote}>
+                                    {AVATAR_COLLECTIONS[selectedCollection].note}
+                                </p>
+                            )}
                         </div>
 
                         {/* Dynamic Parameter Selectors */}
