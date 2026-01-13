@@ -19,9 +19,13 @@ export async function PATCH(req) {
             return NextResponse.json({ error: "Image URL is required" }, { status: 400 });
         }
 
-        // Validate that the image URL is from DiceBear (security check)
-        if (!image.startsWith("https://api.dicebear.com/")) {
-            return NextResponse.json({ error: "Invalid image source" }, { status: 400 });
+        try {
+            const urlObj = new URL(image);
+            if (urlObj.protocol !== "https:" || urlObj.hostname !== "api.dicebear.com") {
+                return NextResponse.json({ error: "Invalid image source" }, { status: 400 });
+            }
+        } catch (error) {
+            return NextResponse.json({ error: "Invalid image URL" }, { status: 400 });
         }
 
         const updatedUser = await User.findOneAndUpdate(
