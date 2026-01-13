@@ -204,6 +204,7 @@ const genBeanHeadConfig = (name = "Usuario") => {
     const rng = mulberry32(hashString(safeName));
 
     return {
+        base: true, // Required by BeanHead
         body: pick(rng, BODY_OPTIONS),
         hair: pick(rng, HAIR_OPTIONS),
         hairColor: pick(rng, HAIR_COLOR_OPTIONS),
