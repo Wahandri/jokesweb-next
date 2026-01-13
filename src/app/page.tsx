@@ -18,17 +18,26 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
   // 1. Definimos la query para la búsqueda
   const query = params.search ? { text: { $regex: params.search, $options: "i" } } : {};
 
-  let jokes = [];
-  try {
-    // 2. Traemos los chistes y poblamos el autor para tener nombre y foto real de la DB
-    jokes = await Joke.find(query)
-      .populate('author', 'username image')
-      .sort({ createdAt: -1 })
-      .lean();
-  } catch (error) {
-    console.warn("Populate failed, falling back to basic fetch:", error);
-    jokes = await Joke.find(query).sort({ createdAt: -1 }).lean();
-  }
+  // 2. Query dividida: ObjectId vs string en author
+  // Query 1: chistes con author ObjectId → se pueden popular
+  const jokesWithObjectId = await Joke.find({
+    ...query,
+    author: { $type: 'objectId' }
+  })
+    .populate('author', 'username image')
+    .lean();
+
+  // Query 2: chistes con author string → NO se intenta popular
+  const jokesWithString = await Joke.find({
+    ...query,
+    author: { $type: 'string' }
+  })
+    .lean();
+
+  // 3. Unimos ambos arrays y ordenamos por createdAt en memoria
+  const jokes = [...jokesWithObjectId, ...jokesWithString].sort((a: any, b: any) => {
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
 
   let userFavorites: string[] = [];
   if (session?.user?.email) {

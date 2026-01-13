@@ -28,16 +28,22 @@ export default function JokeCard({
     useEffect(() => {
         if (!session?.user || !author) return;
 
-        if (
+        const isCurrentUser =
             (author.username && author.username === session.user.username) ||
-            (author.email && author.email === session.user.email)
-        ) {
+            (author.email && author.email === session.user.email);
+
+        if (!isCurrentUser) return;
+
+        const newImage = session.user.image;
+
+        // Solo actualizamos si la imagen realmente cambia
+        if (newImage && author.image !== newImage) {
             setAuthor((prev) => ({
                 ...prev,
-                image: session.user.image || prev?.image,
+                image: newImage,
             }));
         }
-    }, [session, author]);
+    }, [session?.user?.image, session?.user?.username, session?.user?.email, author?.username, author?.email, author?.image]);
 
     // Calculate which score image to show based on average score
     const getScoreImage = (currentScore) => {

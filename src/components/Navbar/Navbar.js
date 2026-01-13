@@ -65,8 +65,8 @@ export default function Navbar() {
                     </div>
                 )}
                 {!session && (
-                    <Link href="/create-joke" className={styles.submitButton}>
-                        Subir Chiste
+                    <Link href="/auth/login" className={styles.submitButton}>
+                        Iniciar Sesión
                     </Link>
                 )}
             </div>
