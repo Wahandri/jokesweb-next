@@ -5,6 +5,7 @@ import Joke from "@/models/Joke";
 import User from "@/models/User";
 import JokeCard from "@/components/JokeCard/JokeCard";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { serializeJokesWithAuthorAndScore } from "@/lib/serializeJokes";
 import styles from "./top.module.css";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +15,24 @@ export default async function TopJokesPage() {
     const session = await getServerSession(authOptions);
 
     // Fetch top 10 jokes sorted by score descending
-    const jokes = await Joke.find().sort({ score: -1 }).limit(10).lean();
+    const jokesWithObjectId = await Joke.find({
+        author: { $type: "objectId" },
+    })
+        .sort({ score: -1 })
+        .limit(10)
+        .populate("author", "username image avatarConfig")
+        .lean();
+
+    const jokesWithString = await Joke.find({
+        author: { $type: "string" },
+    })
+        .sort({ score: -1 })
+        .limit(10)
+        .lean();
+
+    const jokes = [...jokesWithObjectId, ...jokesWithString]
+        .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
+        .slice(0, 10);
 
     let userFavorites = [];
     if (session) {
@@ -24,15 +42,15 @@ export default async function TopJokesPage() {
         }
     }
 
-    const serializedJokes = jokes.map((joke) => ({
+    const serializedJokes = serializeJokesWithAuthorAndScore(jokes).map((joke) => ({
         ...joke,
         _id: joke._id.toString(),
         userScores: joke.userScores?.map((s) => ({
             ...s,
             _id: s._id?.toString(),
         })) || [],
-        createdAt: joke.createdAt?.toISOString(),
-        updatedAt: joke.updatedAt?.toISOString(),
+        createdAt: joke.createdAt ? new Date(joke.createdAt).toISOString() : undefined,
+        updatedAt: joke.updatedAt ? new Date(joke.updatedAt).toISOString() : undefined,
     }));
 
     return (
