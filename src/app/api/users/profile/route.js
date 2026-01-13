@@ -13,32 +13,25 @@ export async function PATCH(req) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const { image } = await req.json();
+        const { username, avatarConfig } = await req.json();
 
-        if (!image) {
-            return NextResponse.json({ error: "Image URL is required" }, { status: 400 });
-        }
+        const user = await User.findOne({ email: session.user.email }).select("-password");
 
-        try {
-            const urlObj = new URL(image);
-            if (urlObj.protocol !== "https:" || urlObj.hostname !== "api.dicebear.com") {
-                return NextResponse.json({ error: "Invalid image source" }, { status: 400 });
-            }
-        } catch (error) {
-            return NextResponse.json({ error: "Invalid image URL" }, { status: 400 });
-        }
-
-        const updatedUser = await User.findOneAndUpdate(
-            { email: session.user.email },
-            { image },
-            { new: true }
-        ).select("-password");
-
-        if (!updatedUser) {
+        if (!user) {
             return NextResponse.json({ error: "User not found" }, { status: 404 });
         }
 
-        return NextResponse.json({ ok: true, user: updatedUser }, { status: 200 });
+        if (username) {
+            user.username = username;
+        }
+
+        if (avatarConfig && typeof avatarConfig === "object") {
+            user.avatarConfig = avatarConfig;
+        }
+
+        await user.save();
+
+        return NextResponse.json({ ok: true, user }, { status: 200 });
 
     } catch (error) {
         console.error("Error updating profile:", error);

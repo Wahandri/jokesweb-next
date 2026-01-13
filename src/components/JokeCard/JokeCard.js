@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import styles from "./JokeCard.module.css";
+import UserAvatar from "../UserAvatar/UserAvatar";
 
 export default function JokeCard({
     joke,
@@ -22,7 +23,7 @@ export default function JokeCard({
     const [author, setAuthor] = useState(joke.author);
     const authorUsername = author?.username;
     const authorEmail = author?.email;
-    const authorImage = author?.image;
+    const authorAvatarConfig = author?.avatarConfig;
 
     useEffect(() => {
         setAuthor(joke.author);
@@ -37,22 +38,21 @@ export default function JokeCard({
 
         if (!isCurrentUser) return;
 
-        const newImage = session.user.image;
+        const newAvatarConfig = session.user.avatarConfig;
 
-        // Solo actualizamos si la imagen realmente cambia
-        if (newImage && authorImage !== newImage) {
+        if (newAvatarConfig && authorAvatarConfig !== newAvatarConfig) {
             setAuthor((prev) => ({
                 ...prev,
-                image: newImage,
+                avatarConfig: newAvatarConfig,
             }));
         }
     }, [
-        session?.user?.image,
+        session?.user?.avatarConfig,
         session?.user?.username,
         session?.user?.email,
         authorUsername,
         authorEmail,
-        authorImage,
+        authorAvatarConfig,
     ]);
 
     // Calculate which score image to show based on average score
@@ -134,21 +134,18 @@ export default function JokeCard({
     };
 
     const avatarUsername = author?.username || "Anonymous";
+    const avatarConfig = author?.avatarConfig || null;
 
     return (
         <div className={styles.card}>
             <div className={styles.header}>
                 <div className={styles.userInfo}>
-                    <Image
-                        src={
-                            author?.image ||
-                            `https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarUsername}`
-                        }
-                        alt={avatarUsername}
-                        width={40}
-                        height={40}
+                    <UserAvatar
+                        username={avatarUsername}
+                        avatarConfig={avatarConfig}
+                        size={40}
                         className={styles.avatar}
-                        unoptimized
+                        shape="circle"
                     />
                     <div className={styles.userMeta}>
                         <span className={styles.author}>@{avatarUsername}</span>

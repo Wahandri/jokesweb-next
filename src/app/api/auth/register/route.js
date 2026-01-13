@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import dbConnect from "@/lib/mongodb";
 import User from "@/models/User";
+import { genConfig } from "react-nice-avatar";
 
 export async function POST(req) {
     try {
@@ -47,6 +48,9 @@ export async function POST(req) {
         // Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        const baseName = username || email || "Usuario";
+        const initialAvatarConfig = genConfig(baseName);
+
         // Create user
         const user = new User({
             username,
@@ -54,7 +58,7 @@ export async function POST(req) {
             password: hashedPassword,
             role: "USER",
             active: true,
-            image: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(username)}`,
+            avatarConfig: initialAvatarConfig,
         });
 
         await user.save();

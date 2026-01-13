@@ -4,10 +4,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { useSession, signOut } from "next-auth/react";
 import styles from "./Navbar.module.css";
+import UserAvatar from "../UserAvatar/UserAvatar";
 
 export default function Navbar() {
     const { data: session } = useSession();
     const displayName = session?.user?.username || session?.user?.name || "Usuario";
+    const avatarConfig = session?.user?.avatarConfig || null;
 
     return (
         <nav className={styles.navbar}>
@@ -44,18 +46,12 @@ export default function Navbar() {
                 {session && (
                     <div className={styles.userMenu}>
                         <Link href="/user" className={styles.userLink}>
-                            <Image
-                                src={
-                                    session.user.image ||
-                                    `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(
-                                        displayName
-                                    )}`
-                                }
-                                alt={displayName}
-                                width={32}
-                                height={32}
+                            <UserAvatar
+                                username={displayName}
+                                avatarConfig={avatarConfig}
+                                size={32}
                                 className={styles.avatar}
-                                unoptimized
+                                shape="circle"
                             />
                             <span className={styles.userName}>{displayName}</span>
                         </Link>

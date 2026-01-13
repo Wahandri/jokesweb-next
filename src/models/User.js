@@ -31,9 +31,11 @@ const UserSchema = new mongoose.Schema({
     },
     image: {
         type: String,
-        default: function () {
-            return `https://api.dicebear.com/7.x/avataaars/svg?seed=${this.username}`;
-        }
+        default: ""
+    },
+    avatarConfig: {
+        type: mongoose.Schema.Types.Mixed,
+        default: {}
     },
     favoriteJokes: [
         { type: mongoose.Schema.Types.ObjectId, ref: 'Joke' }
