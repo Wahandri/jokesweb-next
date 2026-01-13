@@ -7,6 +7,7 @@ import styles from "./Navbar.module.css";
 
 export default function Navbar() {
     const { data: session } = useSession();
+    const displayName = session?.user?.username || session?.user?.name || "Usuario";
 
     return (
         <nav className={styles.navbar}>
@@ -44,14 +45,19 @@ export default function Navbar() {
                     <div className={styles.userMenu}>
                         <Link href="/user" className={styles.userLink}>
                             <Image
-                                src={session.user.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${session.user.name}`}
-                                alt={session.user.name}
+                                src={
+                                    session.user.image ||
+                                    `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(
+                                        displayName
+                                    )}`
+                                }
+                                alt={displayName}
                                 width={32}
                                 height={32}
                                 className={styles.avatar}
                                 unoptimized
                             />
-                            <span className={styles.userName}>{session.user.name}</span>
+                            <span className={styles.userName}>{displayName}</span>
                         </Link>
                         <button onClick={() => signOut()} className={styles.logoutButton}>
                             Cerrar Sesión
