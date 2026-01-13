@@ -27,11 +27,46 @@ export async function GET(req) {
             );
         }
 
-        const favoriteJokes = await Joke.find({
+        const jokes = await Joke.find({
             _id: { $in: user.favoriteJokes },
+        })
+            .populate("author", "username image")
+            .sort({ createdAt: -1 })
+            .lean();
+
+        const serializedFavorites = jokes.map((joke) => {
+            let authorObj = {
+                username: "Anónimo",
+                image: "https://api.dicebear.com/7.x/avataaars/svg?seed=fallback",
+            };
+
+            if (joke.author) {
+                if (typeof joke.author === "string") {
+                    authorObj = {
+                        username: joke.author,
+                        image: `https://api.dicebear.com/7.x/avataaars/svg?seed=${joke.author}`,
+                    };
+                } else if (joke.author.username) {
+                    authorObj = {
+                        username: joke.author.username,
+                        image:
+                            joke.author.image ||
+                            `https://api.dicebear.com/7.x/avataaars/svg?seed=${joke.author.username}`,
+                    };
+                }
+            }
+
+            return {
+                ...joke,
+                author: authorObj,
+                score: joke.averageRating || joke.score || 0,
+            };
         });
 
-        return NextResponse.json({ ok: true, favoriteJokes });
+        return NextResponse.json(
+            { ok: true, favoriteJokes: serializedFavorites },
+            { status: 200 }
+        );
     } catch (error) {
         console.error("Error fetching favorites:", error);
         return NextResponse.json(
