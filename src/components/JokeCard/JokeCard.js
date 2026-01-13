@@ -1,19 +1,38 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import styles from "./JokeCard.module.css";
 
 export default function JokeCard({ joke, isFavoriteInitial = false, onDelete = undefined }) {
     const { data: session } = useSession();
-    const [score, setScore] = useState(joke.score);
+    const [score, setScore] = useState(joke.score ?? 0);
     const [userScore, setUserScore] = useState(
         joke.userScores?.find((s) => s.email === session?.user?.email)?.score || 0
     );
     const [isFavorite, setIsFavorite] = useState(isFavoriteInitial);
 
     const [isSpeaking, setIsSpeaking] = useState(false);
+    const [author, setAuthor] = useState(joke.author);
+
+    useEffect(() => {
+        setAuthor(joke.author);
+    }, [joke.author]);
+
+    useEffect(() => {
+        if (!session?.user || !author) return;
+
+        if (
+            (author.username && author.username === session.user.username) ||
+            (author.email && author.email === session.user.email)
+        ) {
+            setAuthor((prev) => ({
+                ...prev,
+                image: session.user.image || prev?.image,
+            }));
+        }
+    }, [session, author]);
 
     // Calculate which score image to show based on average score
     const getScoreImage = (currentScore) => {
@@ -39,8 +58,12 @@ export default function JokeCard({ joke, isFavoriteInitial = false, onDelete = u
 
             if (res.ok) {
                 const data = await res.json();
-                setScore(data.joke.averageRating || data.joke.score);
+                const updatedJoke = data.joke;
+                setScore(updatedJoke.averageRating ?? updatedJoke.score ?? 0);
                 setUserScore(newScore);
+                if (updatedJoke.author) {
+                    setAuthor(updatedJoke.author);
+                }
             }
         } catch (error) {
             console.error("Error voting:", error);
@@ -85,21 +108,28 @@ export default function JokeCard({ joke, isFavoriteInitial = false, onDelete = u
         window.speechSynthesis.speak(utterance);
     };
 
+    const avatarUsername = author?.username || "Anonymous";
+
     return (
         <div className={styles.card}>
             <div className={styles.header}>
                 <div className={styles.userInfo}>
                     <Image
-                        src={joke.author?.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${joke.author?.username || 'Anonymous'}`}
-                        alt={joke.author?.username || 'Anonymous'}
+                        src={
+                            author?.image ||
+                            `https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarUsername}`
+                        }
+                        alt={avatarUsername}
                         width={40}
                         height={40}
                         className={styles.avatar}
                         unoptimized
                     />
                     <div className={styles.userMeta}>
-                        <span className={styles.author}>@{joke.author?.username || 'Anonymous'}</span>
-                        <span className={styles.date}>{new Date(joke.createdAt).toLocaleDateString('es-ES')}</span>
+                        <span className={styles.author}>@{avatarUsername}</span>
+                        <span className={styles.date}>
+                            {new Date(joke.createdAt).toLocaleDateString("es-ES")}
+                        </span>
                     </div>
                 </div>
             </div>
