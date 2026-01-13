@@ -5,6 +5,7 @@ import User from "@/models/User";
 import JokeCard from "@/components/JokeCard/JokeCard";
 import Hero from "@/components/Hero/Hero";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { serializeJokesWithAuthorAndScore } from "@/lib/serializeJokes";
 import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
@@ -37,40 +38,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
     }
   }
 
-  // 3. SERIALIZACIÓN PROFUNDA: Limpieza total de objetos de MongoDB
-  // Usamos JSON.parse(JSON.stringify()) para convertir ObjectIDs y Buffers en texto plano
-  const plainJokes = JSON.parse(JSON.stringify(jokes));
-
-  const serializedJokes = plainJokes.map((joke: any) => {
-    // 4. Lógica para manejar autores (Nuevos con ID / Antiguos con String)
-    let authorObj = {
-      username: 'Anónimo',
-      image: `https://api.dicebear.com/7.x/avataaars/svg?seed=fallback`
-    };
-
-    if (joke.author) {
-      if (typeof joke.author === 'object' && joke.author.username) {
-        // Caso Ideal: Usuario poblado correctamente
-        authorObj = {
-          username: joke.author.username,
-          image: joke.author.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${joke.author.username}`
-        };
-      } else if (typeof joke.author === 'string') {
-        // Caso Legacy: El autor era solo un nombre escrito
-        authorObj = {
-          username: joke.author,
-          image: `https://api.dicebear.com/7.x/avataaars/svg?seed=${joke.author}`
-        };
-      }
-    }
-
-    return {
-      ...joke,
-      author: authorObj,
-      // Sincronizamos la puntuación para las estrellas del frontend
-      score: joke.averageRating || joke.score || 0,
-    };
-  });
+  const serializedJokes = serializeJokesWithAuthorAndScore(jokes);
 
   return (
     <div className={styles.container}>
