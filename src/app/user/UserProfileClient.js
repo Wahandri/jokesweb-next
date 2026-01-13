@@ -3,9 +3,18 @@
 import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
-import { genConfig } from "react-nice-avatar";
+import { BeanHead } from "beanheads";
 import JokeCard from "@/components/JokeCard/JokeCard";
-import UserAvatar from "@/components/UserAvatar/UserAvatar";
+import genBeanHeadConfig, {
+    ACCESSORY_OPTIONS,
+    BODY_OPTIONS,
+    CLOTHING_OPTIONS,
+    CLOTHING_COLOR_OPTIONS,
+    HAIR_OPTIONS,
+    HAIR_COLOR_OPTIONS,
+    CIRCLE_COLOR_OPTIONS,
+    normalizeBeanHeadConfig,
+} from "@/lib/genBeanHeadConfig";
 import styles from "./user.module.css";
 
 export default function UserProfileClient({ user, jokes }) {
@@ -15,9 +24,21 @@ export default function UserProfileClient({ user, jokes }) {
     const [username, setUsername] = useState(user.username || "");
     const [avatarConfig, setAvatarConfig] = useState(() => {
         if (user.avatarConfig && Object.keys(user.avatarConfig).length > 0) {
-            return user.avatarConfig;
+            return normalizeBeanHeadConfig(
+                user.avatarConfig,
+                user.username || "Usuario"
+            );
         }
-        return genConfig(user.username || "Usuario");
+        return genBeanHeadConfig(user.username || "Usuario");
+    });
+    const [shape, setShape] = useState(() => {
+        if (user.avatarConfig?.shape) {
+            return user.avatarConfig.shape;
+        }
+        if (user.avatarConfig?.mask === true) {
+            return "circle";
+        }
+        return "rounded";
     });
 
     useEffect(() => {
@@ -25,7 +46,21 @@ export default function UserProfileClient({ user, jokes }) {
         setUserJokes(jokes);
         setUsername(user.username || "");
         if (user.avatarConfig && Object.keys(user.avatarConfig).length > 0) {
-            setAvatarConfig(user.avatarConfig);
+            setAvatarConfig(
+                normalizeBeanHeadConfig(
+                    user.avatarConfig,
+                    user.username || "Usuario"
+                )
+            );
+        } else {
+            setAvatarConfig(genBeanHeadConfig(user.username || "Usuario"));
+        }
+        if (user.avatarConfig?.shape) {
+            setShape(user.avatarConfig.shape);
+        } else if (user.avatarConfig?.mask === true) {
+            setShape("circle");
+        } else {
+            setShape("rounded");
         }
     }, [user, jokes]);
 
@@ -36,6 +71,14 @@ export default function UserProfileClient({ user, jokes }) {
         setAvatarConfig((prev) => ({
             ...prev,
             [field]: value,
+        }));
+    };
+
+    const handleShapeChange = (value) => {
+        setShape(value);
+        setAvatarConfig((prev) => ({
+            ...prev,
+            mask: value === "circle",
         }));
     };
 
@@ -107,13 +150,25 @@ export default function UserProfileClient({ user, jokes }) {
                 <div className={styles.profileCard}>
                     <div className={styles.avatarSection}>
                         <div className={styles.avatarContainer}>
-                            <UserAvatar
-                                username={userData.username}
-                                avatarConfig={avatarConfig}
-                                size={150}
+                            <div
                                 className={styles.avatar}
-                                shape={avatarConfig.shape || "circle"}
-                            />
+                                style={{
+                                    width: 150,
+                                    height: 150,
+                                    borderRadius:
+                                        shape === "circle"
+                                            ? "50%"
+                                            : shape === "rounded"
+                                                ? "12px"
+                                                : "0px",
+                                }}
+                            >
+                                <BeanHead
+                                    {...avatarConfig}
+                                    mask={shape === "circle"}
+                                    style={{ width: "100%", height: "100%" }}
+                                />
+                            </div>
                         </div>
                         <div className={styles.userInfo}>
                             <h1 className={styles.userName}>{userData.username}</h1>
@@ -144,59 +199,70 @@ export default function UserProfileClient({ user, jokes }) {
                         </div>
                         <div className={styles.configGrid}>
                             <div className={styles.configSection}>
-                                <label>Sexo</label>
+                                <label>Cuerpo</label>
                                 <select
-                                    value={avatarConfig.sex || "man"}
-                                    onChange={(e) => handleAvatarChange("sex", e.target.value)}
+                                    value={avatarConfig.body || "chest"}
+                                    onChange={(e) => handleAvatarChange("body", e.target.value)}
                                     className={styles.select}
                                 >
-                                    <option value="man">Hombre</option>
-                                    <option value="woman">Mujer</option>
+                                    {BODY_OPTIONS.map((option) => (
+                                        <option key={option} value={option}>
+                                            {option === "chest" ? "Pecho" : "Busto"}
+                                        </option>
+                                    ))}
                                 </select>
                             </div>
                             <div className={styles.configSection}>
                                 <label>Pelo</label>
                                 <select
-                                    value={avatarConfig.hairStyle || "normal"}
-                                    onChange={(e) => handleAvatarChange("hairStyle", e.target.value)}
+                                    value={avatarConfig.hair || "short"}
+                                    onChange={(e) => handleAvatarChange("hair", e.target.value)}
                                     className={styles.select}
                                 >
-                                    <option value="normal">Normal</option>
-                                    <option value="thick">Denso</option>
-                                    <option value="mohawk">Cresta</option>
-                                    <option value="womanLong">Largo</option>
-                                    <option value="womanShort">Corto</option>
+                                    {HAIR_OPTIONS.map((option) => (
+                                        <option key={option} value={option}>
+                                            {option}
+                                        </option>
+                                    ))}
                                 </select>
                             </div>
                             <div className={styles.configSection}>
-                                <label>Gafas</label>
+                                <label>Accesorio</label>
                                 <select
-                                    value={avatarConfig.glassesStyle || "none"}
-                                    onChange={(e) => handleAvatarChange("glassesStyle", e.target.value)}
+                                    value={avatarConfig.accessory || "none"}
+                                    onChange={(e) =>
+                                        handleAvatarChange("accessory", e.target.value)
+                                    }
                                     className={styles.select}
                                 >
-                                    <option value="none">Sin gafas</option>
-                                    <option value="round">Redondas</option>
-                                    <option value="square">Cuadradas</option>
+                                    {ACCESSORY_OPTIONS.map((option) => (
+                                        <option key={option} value={option}>
+                                            {option}
+                                        </option>
+                                    ))}
                                 </select>
                             </div>
                             <div className={styles.configSection}>
-                                <label>Camiseta</label>
+                                <label>Ropa</label>
                                 <select
-                                    value={avatarConfig.shirtStyle || "hoody"}
-                                    onChange={(e) => handleAvatarChange("shirtStyle", e.target.value)}
+                                    value={avatarConfig.clothing || "shirt"}
+                                    onChange={(e) =>
+                                        handleAvatarChange("clothing", e.target.value)
+                                    }
                                     className={styles.select}
                                 >
-                                    <option value="hoody">Sudadera</option>
-                                    <option value="short">Camiseta</option>
-                                    <option value="polo">Polo</option>
+                                    {CLOTHING_OPTIONS.map((option) => (
+                                        <option key={option} value={option}>
+                                            {option}
+                                        </option>
+                                    ))}
                                 </select>
                             </div>
                             <div className={styles.configSection}>
                                 <label>Forma</label>
                                 <select
-                                    value={avatarConfig.shape || "circle"}
-                                    onChange={(e) => handleAvatarChange("shape", e.target.value)}
+                                    value={shape}
+                                    onChange={(e) => handleShapeChange(e.target.value)}
                                     className={styles.select}
                                 >
                                     <option value="circle">Circular</option>
@@ -206,42 +272,75 @@ export default function UserProfileClient({ user, jokes }) {
                             </div>
                             <div className={styles.configSection}>
                                 <label>Color de pelo</label>
-                                <input
-                                    type="color"
-                                    value={avatarConfig.hairColor || "#000000"}
-                                    onChange={(e) => handleAvatarChange("hairColor", e.target.value)}
+                                <select
+                                    value={avatarConfig.hairColor || "black"}
+                                    onChange={(e) =>
+                                        handleAvatarChange("hairColor", e.target.value)
+                                    }
                                     className={styles.select}
-                                />
+                                >
+                                    {HAIR_COLOR_OPTIONS.map((option) => (
+                                        <option key={option} value={option}>
+                                            {option}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
                             <div className={styles.configSection}>
-                                <label>Color de camiseta</label>
-                                <input
-                                    type="color"
-                                    value={avatarConfig.shirtColor || "#92A1C6"}
-                                    onChange={(e) => handleAvatarChange("shirtColor", e.target.value)}
+                                <label>Color de ropa</label>
+                                <select
+                                    value={avatarConfig.clothingColor || "blue"}
+                                    onChange={(e) =>
+                                        handleAvatarChange("clothingColor", e.target.value)
+                                    }
                                     className={styles.select}
-                                />
+                                >
+                                    {CLOTHING_COLOR_OPTIONS.map((option) => (
+                                        <option key={option} value={option}>
+                                            {option}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
                             <div className={styles.configSection}>
                                 <label>Fondo</label>
-                                <input
-                                    type="color"
-                                    value={avatarConfig.bgColor || "#FFFFFF"}
-                                    onChange={(e) => handleAvatarChange("bgColor", e.target.value)}
+                                <select
+                                    value={avatarConfig.circleColor || "#F9C9B6"}
+                                    onChange={(e) =>
+                                        handleAvatarChange("circleColor", e.target.value)
+                                    }
                                     className={styles.select}
-                                />
+                                >
+                                    {CIRCLE_COLOR_OPTIONS.map((option) => (
+                                        <option key={option} value={option}>
+                                            {option}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
                         </div>
 
                         <div className={styles.previewContainer}>
                             <p className={styles.previewLabel}>Vista Previa:</p>
-                            <UserAvatar
-                                username={userData.username}
-                                avatarConfig={avatarConfig}
-                                size={80}
+                            <div
                                 className={styles.miniPreview}
-                                shape={avatarConfig.shape || "circle"}
-                            />
+                                style={{
+                                    width: 80,
+                                    height: 80,
+                                    borderRadius:
+                                        shape === "circle"
+                                            ? "50%"
+                                            : shape === "rounded"
+                                                ? "10px"
+                                                : "0px",
+                                }}
+                            >
+                                <BeanHead
+                                    {...avatarConfig}
+                                    mask={shape === "circle"}
+                                    style={{ width: "100%", height: "100%" }}
+                                />
+                            </div>
                         </div>
 
                         <button onClick={saveProfile} className={styles.saveButton}>

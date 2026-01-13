@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import dbConnect from "@/lib/mongodb";
 import User from "@/models/User";
-import { genConfig } from "react-nice-avatar";
+import genBeanHeadConfig from "@/lib/genBeanHeadConfig";
 
 export async function POST(req) {
     try {
@@ -49,7 +49,7 @@ export async function POST(req) {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const baseName = username || email || "Usuario";
-        const initialAvatarConfig = genConfig(baseName);
+        const initialAvatarConfig = genBeanHeadConfig(baseName);
 
         // Create user
         const user = new User({

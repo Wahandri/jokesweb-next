@@ -1,6 +1,7 @@
 "use client";
 
-import Avatar, { genConfig } from "react-nice-avatar";
+import { BeanHead } from "beanheads";
+import genBeanHeadConfig from "@/lib/genBeanHeadConfig";
 
 export default function UserAvatar({
     username,
@@ -14,14 +15,21 @@ export default function UserAvatar({
     const config =
         avatarConfig && Object.keys(avatarConfig).length > 0
             ? avatarConfig
-            : genConfig(name);
+            : genBeanHeadConfig(name);
+
+    const borderRadius =
+        shape === "circle" ? "50%" : shape === "rounded" ? "12px" : "0px";
 
     return (
-        <Avatar
+        <div
             className={className}
-            style={{ width: size, height: size }}
-            shape={shape}
-            {...config}
-        />
+            style={{ width: size, height: size, borderRadius }}
+        >
+            <BeanHead
+                {...config}
+                mask={shape === "circle"}
+                style={{ width: "100%", height: "100%" }}
+            />
+        </div>
     );
 }
