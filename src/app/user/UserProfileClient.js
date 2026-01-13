@@ -288,7 +288,7 @@ export default function UserProfileClient({ user, jokes }) {
                             <div className={styles.configSection}>
                                 <label>Boca</label>
                                 <select
-                                    value={normalizedAvatarConfig.mouth || "smile"}
+                                    value={normalizedAvatarConfig.mouth || "grin"}
                                     onChange={(e) => handleAvatarChange("mouth", e.target.value)}
                                     className={styles.select}
                                 >
