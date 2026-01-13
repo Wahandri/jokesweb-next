@@ -207,6 +207,15 @@ const AVATAR_COLLECTIONS = {
     }
 };
 
+const isValidDiceBearUrl = (url) => {
+    try {
+        const urlObj = new URL(url);
+        return urlObj.protocol === "https:" && urlObj.hostname === "api.dicebear.com";
+    } catch {
+        return false;
+    }
+};
+
 export default function UserProfileClient({ user, jokes }) {
     const { update } = useSession();
     const [userData, setUserData] = useState(user);
@@ -253,6 +262,11 @@ export default function UserProfileClient({ user, jokes }) {
     };
 
     const saveAvatar = async () => {
+        if (!previewUrl || !isValidDiceBearUrl(previewUrl)) {
+            alert("La URL del avatar es inválida");
+            return;
+        }
+
         try {
             const res = await fetch("/api/users/profile", {
                 method: "PATCH",
@@ -263,6 +277,14 @@ export default function UserProfileClient({ user, jokes }) {
             if (res.ok) {
                 const data = await res.json();
                 setUserData(data.user);
+                setUserJokes((prev) =>
+                    prev.map((j) =>
+                        j.author &&
+                        (j.author._id === data.user._id || j.author.username === data.user.username)
+                            ? { ...j, author: { ...j.author, image: previewUrl } }
+                            : j
+                    )
+                );
                 await update({ image: previewUrl }); // Update session immediately
                 alert("Avatar actualizado correctamente!");
             } else {
