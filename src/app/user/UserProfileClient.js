@@ -60,6 +60,10 @@ export default function UserProfileClient({ user, jokes }) {
         message: "",
         variant: "info",
     });
+    const [deleteModal, setDeleteModal] = useState({
+        open: false,
+        jokeId: null,
+    });
 
     useEffect(() => {
         setUserData(user);
@@ -180,16 +184,17 @@ export default function UserProfileClient({ user, jokes }) {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (!confirm("¿Estás seguro de que quieres eliminar este chiste?")) return;
-
+    const handleDeleteConfirm = async () => {
+        if (!deleteModal.jokeId) return;
+        const jokeId = deleteModal.jokeId;
+        setDeleteModal({ open: false, jokeId: null });
         try {
-            const res = await fetch(`/api/jokes/${id}`, {
+            const res = await fetch(`/api/jokes/${jokeId}`, {
                 method: "DELETE",
             });
 
             if (res.ok) {
-                setUserJokes(userJokes.filter((joke) => joke._id !== id));
+                setUserJokes((prev) => prev.filter((joke) => joke._id !== jokeId));
                 showModal(
                     "Chiste eliminado",
                     "El chiste se eliminó correctamente.",
@@ -623,7 +628,9 @@ export default function UserProfileClient({ user, jokes }) {
                                 <JokeCard
                                     key={joke._id}
                                     joke={joke}
-                                    onDelete={handleDelete}
+                                    onDelete={(id) =>
+                                        setDeleteModal({ open: true, jokeId: id })
+                                    }
                                 />
                             ))}
                         </div>
@@ -637,6 +644,16 @@ export default function UserProfileClient({ user, jokes }) {
                 message={modal.message}
                 variant={modal.variant}
                 onClose={closeModal}
+            />
+            <Modal
+                open={deleteModal.open}
+                title="¿Eliminar chiste?"
+                message="¿Estás seguro de que quieres eliminar este chiste? Esta acción no se puede deshacer."
+                variant="error"
+                onClose={() => setDeleteModal({ open: false, jokeId: null })}
+                onConfirm={handleDeleteConfirm}
+                confirmLabel="Eliminar"
+                cancelLabel="Cancelar"
             />
         </>
     );
