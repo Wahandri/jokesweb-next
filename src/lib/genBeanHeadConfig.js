@@ -187,6 +187,25 @@ const mapLegacyColor = (value, fallback) => {
     if (LEGACY_COLOR_MAP[value]) {
         return LEGACY_COLOR_MAP[value];
     }
+    if (isHexColor(value)) {
+        return fallback;
+    }
+    return fallback;
+};
+
+const normalizeColorChoice = (value, options, fallback) => {
+    if (!value || typeof value !== "string") {
+        return fallback;
+    }
+    if (options.includes(value)) {
+        return value;
+    }
+    if (LEGACY_COLOR_MAP[value]) {
+        return LEGACY_COLOR_MAP[value];
+    }
+    if (isHexColor(value)) {
+        return fallback;
+    }
     return fallback;
 };
 
@@ -222,12 +241,41 @@ const normalizeBeanHeadConfig = (config, name) => {
         return genBeanHeadConfig(name);
     }
 
+    const base = genBeanHeadConfig(name);
     const hasBeanHeadKey = BEANHEAD_KEYS.some((key) => key in config);
     if (hasBeanHeadKey) {
-        const next = { ...genBeanHeadConfig(name), ...config };
-        if (next.circleColor && isHexColor(next.circleColor)) {
-            next.circleColor = "blue";
-        }
+        const next = { ...base, ...config };
+        next.hairColor = normalizeColorChoice(
+            next.hairColor,
+            HAIR_COLOR_OPTIONS,
+            base.hairColor
+        );
+        next.clothingColor = normalizeColorChoice(
+            next.clothingColor,
+            CLOTHING_COLOR_OPTIONS,
+            base.clothingColor
+        );
+        next.hatColor = normalizeColorChoice(
+            next.hatColor,
+            HAT_COLOR_OPTIONS,
+            base.hatColor
+        );
+        next.lipColor = normalizeColorChoice(
+            next.lipColor,
+            LIP_COLOR_OPTIONS,
+            base.lipColor
+        );
+        next.faceMaskColor = normalizeColorChoice(
+            next.faceMaskColor,
+            CLOTHING_COLOR_OPTIONS,
+            base.clothingColor
+        );
+        next.circleColor = normalizeColorChoice(
+            next.circleColor,
+            CIRCLE_COLOR_OPTIONS,
+            base.circleColor
+        );
+
         const filtered = {};
         for (const key of BEANHEAD_KEYS) {
             if (next[key] !== undefined) {
@@ -237,7 +285,6 @@ const normalizeBeanHeadConfig = (config, name) => {
         return filtered;
     }
 
-    const base = genBeanHeadConfig(name);
     const next = { ...base };
 
     if (config.sex && LEGACY_BODY_MAP[config.sex]) {
@@ -260,14 +307,45 @@ const normalizeBeanHeadConfig = (config, name) => {
         next.clothingColor = mapLegacyColor(config.shirtColor, base.clothingColor);
     }
     if (config.bgColor && isHexColor(config.bgColor)) {
-        next.circleColor = "blue";
+        next.circleColor = base.circleColor;
     }
     if (config.circleColor && isHexColor(config.circleColor)) {
-        next.circleColor = "blue";
+        next.circleColor = base.circleColor;
     }
     if (config.shape && config.shape in LEGACY_SHAPE_MAP) {
         next.mask = LEGACY_SHAPE_MAP[config.shape];
     }
+
+    next.hairColor = normalizeColorChoice(
+        next.hairColor,
+        HAIR_COLOR_OPTIONS,
+        base.hairColor
+    );
+    next.clothingColor = normalizeColorChoice(
+        next.clothingColor,
+        CLOTHING_COLOR_OPTIONS,
+        base.clothingColor
+    );
+    next.hatColor = normalizeColorChoice(
+        next.hatColor,
+        HAT_COLOR_OPTIONS,
+        base.hatColor
+    );
+    next.lipColor = normalizeColorChoice(
+        next.lipColor,
+        LIP_COLOR_OPTIONS,
+        base.lipColor
+    );
+    next.faceMaskColor = normalizeColorChoice(
+        next.faceMaskColor,
+        CLOTHING_COLOR_OPTIONS,
+        base.clothingColor
+    );
+    next.circleColor = normalizeColorChoice(
+        next.circleColor,
+        CIRCLE_COLOR_OPTIONS,
+        base.circleColor
+    );
 
     const filtered = {};
     for (const key of BEANHEAD_KEYS) {
