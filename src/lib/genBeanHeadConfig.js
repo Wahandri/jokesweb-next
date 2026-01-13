@@ -1,6 +1,5 @@
 const ACCESSORY_OPTIONS = [
     "none",
-    "eyepatch",
     "roundGlasses",
     "tinyGlasses",
     "shades",
@@ -18,15 +17,11 @@ const CLOTHING_OPTIONS = [
 ];
 
 const CLOTHING_COLOR_OPTIONS = [
-    "black",
-    "blue",
-    "gray",
-    "green",
-    "heather",
-    "navy",
-    "pink",
-    "red",
     "white",
+    "blue",
+    "black",
+    "green",
+    "red",
 ];
 
 const EYEBROWS_OPTIONS = [
@@ -51,13 +46,10 @@ const EYES_OPTIONS = [
 
 const FACIAL_HAIR_OPTIONS = [
     "none",
-    "chin",
-    "full",
-    "fullMajestic",
-    "goatee",
-    "chevron",
-    "soulPatch",
-    "mustache",
+    "none2",
+    "none3",
+    "stubble",
+    "mediumBeard",
 ];
 
 const GRAPHIC_OPTIONS = [
@@ -79,18 +71,41 @@ const HAIR_OPTIONS = [
     "buzz",
     "afro",
     "bob",
-    "mohawk",
 ];
 
-const HAIR_COLOR_OPTIONS = ["black", "brown", "blonde", "red", "gray", "white"];
+const HAIR_COLOR_OPTIONS = [
+    "blonde",
+    "orange",
+    "black",
+    "white",
+    "brown",
+    "blue",
+    "pink",
+];
 
-const HAT_OPTIONS = ["none", "beanie", "turban", "party", "topHat", "fedora"];
+const HAT_OPTIONS = [
+    "none",
+    "none2",
+    "none3",
+    "none4",
+    "none5",
+    "beanie",
+    "turban",
+];
 
-const HAT_COLOR_OPTIONS = [...CLOTHING_COLOR_OPTIONS];
+const HAT_COLOR_OPTIONS = ["white", "blue", "black", "green", "red"];
 
-const LIP_COLOR_OPTIONS = ["red", "pink", "purple", "green", "blue", "brown", "black"];
+const LIP_COLOR_OPTIONS = ["red", "purple", "pink", "turqoise", "green"];
 
-const MOUTH_OPTIONS = ["smile", "open", "serious", "lips", "sad", "grin"];
+const MOUTH_OPTIONS = [
+    "grin",
+    "sad",
+    "openSmile",
+    "lips",
+    "open",
+    "serious",
+    "tongue",
+];
 
 const SKIN_TONE_OPTIONS = ["light", "yellow", "brown", "dark", "red", "black"];
 
@@ -209,6 +224,29 @@ const normalizeColorChoice = (value, options, fallback) => {
     return fallback;
 };
 
+const normalizeOptionChoice = (value, options, fallback) => {
+    if (!value || typeof value !== "string") {
+        return fallback;
+    }
+    if (options.includes(value)) {
+        return value;
+    }
+    return fallback;
+};
+
+const normalizeBooleanChoice = (value, fallback) => {
+    if (typeof value === "boolean") {
+        return value;
+    }
+    if (value === "true") {
+        return true;
+    }
+    if (value === "false") {
+        return false;
+    }
+    return fallback;
+};
+
 const genBeanHeadConfig = (name = "Usuario") => {
     const safeName = name && name.trim().length > 0 ? name.trim() : "Usuario";
     const rng = mulberry32(hashString(safeName));
@@ -245,6 +283,41 @@ const normalizeBeanHeadConfig = (config, name) => {
     const hasBeanHeadKey = BEANHEAD_KEYS.some((key) => key in config);
     if (hasBeanHeadKey) {
         const next = { ...base, ...config };
+        next.body = normalizeOptionChoice(next.body, BODY_OPTIONS, base.body);
+        next.hair = normalizeOptionChoice(next.hair, HAIR_OPTIONS, base.hair);
+        next.clothing = normalizeOptionChoice(
+            next.clothing,
+            CLOTHING_OPTIONS,
+            base.clothing
+        );
+        next.accessory = normalizeOptionChoice(
+            next.accessory,
+            ACCESSORY_OPTIONS,
+            base.accessory
+        );
+        next.eyebrows = normalizeOptionChoice(
+            next.eyebrows,
+            EYEBROWS_OPTIONS,
+            base.eyebrows
+        );
+        next.eyes = normalizeOptionChoice(next.eyes, EYES_OPTIONS, base.eyes);
+        next.facialHair = normalizeOptionChoice(
+            next.facialHair,
+            FACIAL_HAIR_OPTIONS,
+            base.facialHair
+        );
+        next.graphic = normalizeOptionChoice(
+            next.graphic,
+            GRAPHIC_OPTIONS,
+            base.graphic
+        );
+        next.hat = normalizeOptionChoice(next.hat, HAT_OPTIONS, base.hat);
+        next.mouth = normalizeOptionChoice(next.mouth, MOUTH_OPTIONS, base.mouth);
+        next.skinTone = normalizeOptionChoice(
+            next.skinTone,
+            SKIN_TONE_OPTIONS,
+            base.skinTone
+        );
         next.hairColor = normalizeColorChoice(
             next.hairColor,
             HAIR_COLOR_OPTIONS,
@@ -275,6 +348,9 @@ const normalizeBeanHeadConfig = (config, name) => {
             CIRCLE_COLOR_OPTIONS,
             base.circleColor
         );
+        next.mask = normalizeBooleanChoice(next.mask, base.mask);
+        next.faceMask = normalizeBooleanChoice(next.faceMask, base.faceMask);
+        next.lashes = normalizeBooleanChoice(next.lashes, base.lashes);
 
         const filtered = {};
         for (const key of BEANHEAD_KEYS) {
@@ -316,6 +392,38 @@ const normalizeBeanHeadConfig = (config, name) => {
         next.mask = LEGACY_SHAPE_MAP[config.shape];
     }
 
+    next.body = normalizeOptionChoice(next.body, BODY_OPTIONS, base.body);
+    next.hair = normalizeOptionChoice(next.hair, HAIR_OPTIONS, base.hair);
+    next.clothing = normalizeOptionChoice(
+        next.clothing,
+        CLOTHING_OPTIONS,
+        base.clothing
+    );
+    next.accessory = normalizeOptionChoice(
+        next.accessory,
+        ACCESSORY_OPTIONS,
+        base.accessory
+    );
+    next.eyebrows = normalizeOptionChoice(
+        next.eyebrows,
+        EYEBROWS_OPTIONS,
+        base.eyebrows
+    );
+    next.eyes = normalizeOptionChoice(next.eyes, EYES_OPTIONS, base.eyes);
+    next.facialHair = normalizeOptionChoice(
+        next.facialHair,
+        FACIAL_HAIR_OPTIONS,
+        base.facialHair
+    );
+    next.graphic = normalizeOptionChoice(next.graphic, GRAPHIC_OPTIONS, base.graphic);
+    next.hat = normalizeOptionChoice(next.hat, HAT_OPTIONS, base.hat);
+    next.mouth = normalizeOptionChoice(next.mouth, MOUTH_OPTIONS, base.mouth);
+    next.skinTone = normalizeOptionChoice(
+        next.skinTone,
+        SKIN_TONE_OPTIONS,
+        base.skinTone
+    );
+
     next.hairColor = normalizeColorChoice(
         next.hairColor,
         HAIR_COLOR_OPTIONS,
@@ -346,6 +454,9 @@ const normalizeBeanHeadConfig = (config, name) => {
         CIRCLE_COLOR_OPTIONS,
         base.circleColor
     );
+    next.mask = normalizeBooleanChoice(next.mask, base.mask);
+    next.faceMask = normalizeBooleanChoice(next.faceMask, base.faceMask);
+    next.lashes = normalizeBooleanChoice(next.lashes, base.lashes);
 
     const filtered = {};
     for (const key of BEANHEAD_KEYS) {
