@@ -5,6 +5,7 @@ import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import BeanHeadDefault, { BeanHead as BeanHeadNamed } from "beanheads";
 import JokeCard from "@/components/JokeCard/JokeCard";
+import Modal from "@/components/Modal/Modal";
 import genBeanHeadConfig, {
     ACCESSORY_OPTIONS,
     BODY_OPTIONS,
@@ -53,6 +54,15 @@ export default function UserProfileClient({ user, jokes }) {
         }
         return "rounded";
     });
+    const [modal, setModal] = useState({
+        open: false,
+        title: "",
+        message: "",
+        variant: "info",
+        confirmLabel: "Cerrar",
+        cancelLabel: "",
+        action: null,
+    });
 
     useEffect(() => {
         setUserData(user);
@@ -80,6 +90,45 @@ export default function UserProfileClient({ user, jokes }) {
         avatarConfig,
         username.trim() || userData.username || "Usuario"
     );
+
+    const showModal = ({
+        title,
+        message,
+        variant = "info",
+        confirmLabel = "Cerrar",
+        cancelLabel = "",
+        action = null,
+    }) => {
+        setModal({
+            open: true,
+            title,
+            message,
+            variant,
+            confirmLabel,
+            cancelLabel,
+            action,
+        });
+    };
+
+    const closeModal = () => {
+        setModal((prev) => ({ ...prev, open: false, action: null }));
+    };
+
+    const handleModalConfirm = async () => {
+        const action = modal.action;
+        closeModal();
+
+        if (!action) return;
+
+        if (action.type === "delete") {
+            await deleteJoke(action.id);
+            return;
+        }
+
+        if (action.type === "logout") {
+            await signOut({ callbackUrl: "/" });
+        }
+    };
 
     const handleAvatarChange = (field, value) => {
         setAvatarConfig((prev) =>
@@ -143,19 +192,29 @@ export default function UserProfileClient({ user, jokes }) {
                 );
                 setAvatarConfig(nextAvatarConfig);
                 await update({ avatarConfig: nextAvatarConfig });
-                alert("Perfil actualizado correctamente!");
+                showModal({
+                    title: "Perfil actualizado",
+                    message: "Tus cambios se guardaron correctamente.",
+                    variant: "success",
+                });
             } else {
-                alert("Error al actualizar el perfil");
+                showModal({
+                    title: "No se pudo actualizar",
+                    message: "Inténtalo de nuevo más tarde.",
+                    variant: "error",
+                });
             }
         } catch (error) {
             console.error("Error updating profile:", error);
-            alert("Error al actualizar el perfil");
+            showModal({
+                title: "Error inesperado",
+                message: "Ocurrió un problema al guardar el perfil.",
+                variant: "error",
+            });
         }
     };
 
-    const handleDelete = async (id) => {
-        if (!confirm("¿Estás seguro de que quieres eliminar este chiste?")) return;
-
+    const deleteJoke = async (id) => {
         try {
             const res = await fetch(`/api/jokes/${id}`, {
                 method: "DELETE",
@@ -163,20 +222,55 @@ export default function UserProfileClient({ user, jokes }) {
 
             if (res.ok) {
                 setUserJokes(userJokes.filter((joke) => joke._id !== id));
-                alert("Chiste eliminado correctamente.");
+                showModal({
+                    title: "Chiste eliminado",
+                    message: "El chiste se eliminó correctamente.",
+                    variant: "success",
+                });
             } else {
-                alert("Error al eliminar el chiste.");
+                showModal({
+                    title: "No se pudo eliminar",
+                    message: "Inténtalo de nuevo más tarde.",
+                    variant: "error",
+                });
             }
         } catch (error) {
             console.error("Error deleting joke:", error);
-            alert("Error al eliminar el chiste.");
+            showModal({
+                title: "Error inesperado",
+                message: "Ocurrió un problema al eliminar el chiste.",
+                variant: "error",
+            });
         }
     };
 
+    const handleDelete = (id) => {
+        showModal({
+            title: "¿Eliminar chiste?",
+            message: "Esta acción no se puede deshacer.",
+            variant: "error",
+            confirmLabel: "Eliminar",
+            cancelLabel: "Cancelar",
+            action: { type: "delete", id },
+        });
+    };
+
+    const handleLogout = () => {
+        showModal({
+            title: "¿Cerrar sesión?",
+            message: "Podrás volver a iniciar sesión cuando quieras.",
+            variant: "info",
+            confirmLabel: "Cerrar sesión",
+            cancelLabel: "Cancelar",
+            action: { type: "logout" },
+        });
+    };
+
     return (
-        <div className={styles.container}>
-            <div className={styles.dashboard}>
-                <div className={styles.profileCard}>
+        <>
+            <div className={styles.container}>
+                <div className={styles.dashboard}>
+                    <div className={styles.profileCard}>
                     <div className={styles.avatarSection}>
                         <div className={styles.avatarContainer}>
                             <div
@@ -563,7 +657,7 @@ export default function UserProfileClient({ user, jokes }) {
                         </button>
                     </div>
 
-                    <button onClick={() => signOut({ callbackUrl: '/' })} className={styles.logoutButton}>
+                    <button onClick={handleLogout} className={styles.logoutButton}>
                         Cerrar Sesión
                     </button>
                 </div>
@@ -588,8 +682,19 @@ export default function UserProfileClient({ user, jokes }) {
                             ))}
                         </div>
                     )}
+                    </div>
                 </div>
             </div>
-        </div>
+            <Modal
+                open={modal.open}
+                title={modal.title}
+                message={modal.message}
+                variant={modal.variant}
+                actionLabel={modal.confirmLabel}
+                cancelLabel={modal.cancelLabel}
+                onClose={closeModal}
+                onConfirm={handleModalConfirm}
+            />
+        </>
     );
 }
