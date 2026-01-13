@@ -39,6 +39,7 @@ export const authOptions = {
                     role: user.role,
                     active: user.active,
                     image: user.image,
+                    avatarConfig: user.avatarConfig,
                 };
             },
         }),
@@ -51,10 +52,14 @@ export const authOptions = {
                 token.active = user.active;
                 token.username = user.username || user.name;
                 token.picture = user.image;
+                token.avatarConfig = user.avatarConfig || null;
             }
             // Handle session update
             if (trigger === "update" && session?.image) {
                 token.picture = session.image;
+            }
+            if (trigger === "update" && session?.avatarConfig) {
+                token.avatarConfig = session.avatarConfig;
             }
             return token;
         },
@@ -69,11 +74,16 @@ export const authOptions = {
                     session.user.name = session.user.username;
                 }
                 session.user.image = token.picture;
+                session.user.avatarConfig =
+                    token.avatarConfig || session.user.avatarConfig || null;
             }
 
             // Ensure session updates are handled (safety check for avatar updates)
             if (trigger === "update" && token.picture) {
                 session.user.image = token.picture;
+            }
+            if (trigger === "update" && token.avatarConfig) {
+                session.user.avatarConfig = token.avatarConfig;
             }
 
             return session;
