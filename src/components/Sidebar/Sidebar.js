@@ -4,13 +4,29 @@ import { useState } from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import styles from "./Sidebar.module.css";
+import Modal from "../Modal/Modal";
 
 export default function Sidebar() {
     const [isOpen, setIsOpen] = useState(false);
+    const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
     const { data: session } = useSession();
 
     const toggleSidebar = () => {
         setIsOpen(!isOpen);
+    };
+
+    const openLogoutModal = () => {
+        setIsLogoutModalOpen(true);
+    };
+
+    const closeLogoutModal = () => {
+        setIsLogoutModalOpen(false);
+    };
+
+    const handleLogout = async () => {
+        setIsLogoutModalOpen(false);
+        setIsOpen(false);
+        await signOut();
     };
 
     return (
@@ -34,7 +50,7 @@ export default function Sidebar() {
                     )}
                     {session ? (
                         <button
-                            onClick={() => signOut()}
+                            onClick={openLogoutModal}
                             className={`${styles.link} ${styles.button}`}
                         >
                             SALIR
@@ -54,6 +70,16 @@ export default function Sidebar() {
                 </button>
             </div>
             {isOpen && <div className={styles.overlay} onClick={toggleSidebar} />}
+            <Modal
+                open={isLogoutModalOpen}
+                title="¿Cerrar sesión?"
+                message="Podrás volver a iniciar sesión cuando quieras."
+                variant="info"
+                actionLabel="Cerrar sesión"
+                cancelLabel="Cancelar"
+                onClose={closeLogoutModal}
+                onConfirm={handleLogout}
+            />
         </>
     );
 }
