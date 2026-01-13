@@ -49,8 +49,8 @@ export default async function TopJokesPage() {
             ...s,
             _id: s._id?.toString(),
         })) || [],
-        createdAt: joke.createdAt?.toISOString(),
-        updatedAt: joke.updatedAt?.toISOString(),
+        createdAt: joke.createdAt ? new Date(joke.createdAt).toISOString() : undefined,
+        updatedAt: joke.updatedAt ? new Date(joke.updatedAt).toISOString() : undefined,
     }));
 
     return (
