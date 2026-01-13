@@ -35,6 +35,7 @@ export const authOptions = {
                     id: user._id.toString(),
                     email: user.email,
                     name: user.username,
+                    username: user.username,
                     role: user.role,
                     active: user.active,
                     image: user.image,
@@ -48,7 +49,7 @@ export const authOptions = {
                 token.id = user.id;
                 token.role = user.role;
                 token.active = user.active;
-                token.username = user.name;
+                token.username = user.username || user.name;
                 token.picture = user.image;
             }
             // Handle session update
@@ -62,9 +63,10 @@ export const authOptions = {
                 session.user.id = token.id;
                 session.user.role = token.role;
                 session.user.active = token.active;
-                session.user.username = token.username;
+                session.user.username =
+                    token.username || session.user.username || session.user.name;
                 if (!session.user.name) {
-                    session.user.name = token.username;
+                    session.user.name = session.user.username;
                 }
                 session.user.image = token.picture;
             }
