@@ -35,10 +35,13 @@ export async function POST(req, { params }) {
         const existingVoteIndex = joke.userScores.findIndex((s) => s.email === userEmail);
 
         if (existingVoteIndex !== -1) {
-            joke.userScores[existingVoteIndex].score = score;
-        } else {
-            joke.userScores.push({ email: userEmail, score });
+            return NextResponse.json(
+                { ok: false, error: "Ya has votado este chiste" },
+                { status: 409 }
+            );
         }
+
+        joke.userScores.push({ email: userEmail, score });
 
         // 2. Sincronizar array de ratings para historial
         joke.ratings = joke.userScores.map(s => s.score);
