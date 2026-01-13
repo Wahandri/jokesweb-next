@@ -54,6 +54,7 @@ export async function POST(req) {
             password: hashedPassword,
             role: "USER",
             active: true,
+            image: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(username)}`,
         });
 
         await user.save();
