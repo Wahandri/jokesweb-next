@@ -14,9 +14,7 @@ export default function JokeCard({
 }) {
     const { data: session } = useSession();
     const [score, setScore] = useState(joke.score ?? 0);
-    const [userScore, setUserScore] = useState(
-        joke.userScores?.find((s) => s.email === session?.user?.email)?.score || 0
-    );
+    const [userScore, setUserScore] = useState(0);
     const [isFavorite, setIsFavorite] = useState(isFavoriteInitial);
 
     const [isSpeaking, setIsSpeaking] = useState(false);
@@ -28,6 +26,17 @@ export default function JokeCard({
     useEffect(() => {
         setAuthor(joke.author);
     }, [joke.author]);
+
+    useEffect(() => {
+        if (!session?.user?.email) {
+            setUserScore(0);
+            return;
+        }
+
+        const existingScore =
+            joke.userScores?.find((s) => s.email === session.user.email)?.score || 0;
+        setUserScore(existingScore);
+    }, [joke.userScores, session?.user?.email]);
 
     useEffect(() => {
         if (!session?.user || !author) return;
@@ -85,6 +94,9 @@ export default function JokeCard({
                 if (updatedJoke.author) {
                     setAuthor(updatedJoke.author);
                 }
+            } else {
+                const errorData = await res.json();
+                alert(errorData?.error || "No se pudo registrar el voto");
             }
         } catch (error) {
             console.error("Error voting:", error);
@@ -162,22 +174,21 @@ export default function JokeCard({
 
             <div className={styles.footer}>
                 <div className={styles.rating}>
-                    <div className={styles.stars}>
-                        {[1, 2, 3, 4, 5].map((star) => (
-                            <button
-                                key={star}
-                                onClick={() => handleVote(star)}
-                                className={styles.starButton}
-                                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                            >
-                                <span style={{ color: star <= Math.round(score) ? '#FFD700' : '#E0E0E0', fontSize: '1.2rem' }}>★</span>
-                            </button>
-                        ))}
-                    </div>
+                    {!userScore && (
+                        <div className={styles.stars}>
+                            {[1, 2, 3, 4, 5].map((star) => (
+                                <button
+                                    key={star}
+                                    onClick={() => handleVote(star)}
+                                    className={styles.starButton}
+                                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                                >
+                                    <span style={{ color: star <= Math.round(score) ? '#FFD700' : '#E0E0E0', fontSize: '1.2rem' }}>★</span>
+                                </button>
+                            ))}
+                        </div>
+                    )}
                     <span className={styles.scoreValue}>{score.toFixed(1)}</span>
-                    <span className={styles.emoji} style={{ fontSize: '1.5rem', marginLeft: '10px' }}>
-                        {score < 1 ? '😕' : score < 2 ? '😐' : score < 3 ? '🙂' : score < 4 ? '🤭' : '😂'}
-                    </span>
                 </div>
 
                 <div className={styles.actions}>
