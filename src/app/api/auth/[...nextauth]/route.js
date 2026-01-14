@@ -40,6 +40,7 @@ export const authOptions = {
                     active: user.active,
                     image: user.image,
                     avatarConfig: user.avatarConfig,
+                    emailVerified: user.emailVerified,
                 };
             },
         }),
@@ -53,6 +54,7 @@ export const authOptions = {
                 token.username = user.username || user.name;
                 token.picture = user.image;
                 token.avatarConfig = user.avatarConfig || null;
+                token.emailVerified = user.emailVerified;
             }
             // Handle session update
             if (trigger === "update" && session?.image) {
@@ -76,6 +78,7 @@ export const authOptions = {
                 session.user.image = token.picture;
                 session.user.avatarConfig =
                     token.avatarConfig || session.user.avatarConfig || null;
+                session.user.emailVerified = token.emailVerified;
             }
 
             // Ensure session updates are handled (safety check for avatar updates)
