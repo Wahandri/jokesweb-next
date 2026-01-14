@@ -11,6 +11,7 @@ import Modal from "../Modal/Modal";
 export default function Navbar() {
     const { data: session } = useSession();
     const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const displayName = session?.user?.username || session?.user?.name || "Usuario";
     const avatarConfig = session?.user?.avatarConfig || null;
 
@@ -27,6 +28,7 @@ export default function Navbar() {
         await signOut();
     };
 
+
     return (
         <>
             <nav className={styles.navbar}>
@@ -42,23 +44,38 @@ export default function Navbar() {
                         />
                     </Link>
                 </div>
-                <div className={styles.links}>
-                    <Link href="/" className={styles.link}>
+
+                {/* Hamburger Menu Button */}
+                <button
+                    className={styles.hamburger}
+                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    aria-label="Toggle menu"
+                >
+                    <span className={styles.hamburgerLine}></span>
+                    <span className={styles.hamburgerLine}></span>
+                    <span className={styles.hamburgerLine}></span>
+                </button>
+
+                {/* Navigation Links */}
+                <div className={`${styles.links} ${isMobileMenuOpen ? styles.mobileMenuOpen : ''}`}>
+                    <Link href="/" className={styles.link} onClick={() => setIsMobileMenuOpen(false)}>
                         Chistes
                     </Link>
-                    <Link href="/top" className={styles.link}>
+                    <Link href="/top" className={styles.link} onClick={() => setIsMobileMenuOpen(false)}>
                         Mejores
                     </Link>
                     {session ? (
-                        <Link href="/create-joke" className={styles.submitButton}>
+                        <Link href="/create-joke" className={styles.submitButton} onClick={() => setIsMobileMenuOpen(false)}>
                             Subir Chiste
                         </Link>
                     ) : (
-                        <Link href="/auth/login" className={styles.link}>
+                        <Link href="/auth/login" className={styles.link} onClick={() => setIsMobileMenuOpen(false)}>
                             Iniciar Sesión
                         </Link>
                     )}
                 </div>
+
+                {/* Auth Section */}
                 <div className={styles.auth}>
                     {session && (
                         <div className={styles.userMenu}>

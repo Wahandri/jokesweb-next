@@ -17,7 +17,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <main style={{
             maxWidth: "1200px",
             margin: "0 auto",
-            padding: "2rem",
+            padding: "1rem",
             minHeight: "calc(100vh - 80px)"
           }}>
             {children}

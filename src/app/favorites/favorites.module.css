@@ -58,3 +58,38 @@
     transform: translate(1px, 1px);
     box-shadow: 1px 1px #2e7930;
 }
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    .grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .title {
+        font-size: 2rem;
+    }
+
+    .emptyState {
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .title {
+        font-size: 1.75rem;
+    }
+
+    .grid {
+        gap: 1rem;
+    }
+
+    .emptyState {
+        padding: 1rem;
+        font-size: 1rem;
+    }
+
+    .loadingContainer {
+        font-size: 1.25rem;
+    }
+}

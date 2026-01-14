@@ -99,3 +99,67 @@
     background-color: var(--color-primary);
     color: var(--color-text-dark);
 }
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    .hero {
+        padding: 2rem 0.5rem;
+        gap: 1.5rem;
+    }
+
+    .title {
+        font-size: 1.75rem;
+        line-height: 1.2;
+    }
+
+    .searchContainer {
+        max-width: 100%;
+    }
+
+    .searchInput {
+        padding: 0.85rem 1rem;
+        padding-right: 6rem;
+        font-size: 0.95rem;
+    }
+
+    .searchButton {
+        padding: 0 1rem;
+        font-size: 0.9rem;
+    }
+
+    .categories {
+        gap: 0.75rem;
+    }
+
+    .categoryPill {
+        padding: 0.4rem 1rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+    .hero {
+        padding: 1.5rem 0.5rem;
+    }
+
+    .title {
+        font-size: 1.5rem;
+    }
+
+    .searchInput {
+        padding: 0.75rem 0.85rem;
+        padding-right: 5rem;
+        font-size: 0.9rem;
+    }
+
+    .searchButton {
+        padding: 0 0.75rem;
+        font-size: 0.85rem;
+    }
+
+    .categoryPill {
+        padding: 0.35rem 0.85rem;
+        font-size: 0.85rem;
+    }
+}
