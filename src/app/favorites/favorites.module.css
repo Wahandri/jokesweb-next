@@ -1,6 +1,7 @@
 .container {
     max-width: 1200px;
     margin: 0 auto;
+    padding: 1.5rem 1rem 3rem;
 }
 
 .title {
@@ -13,8 +14,8 @@
 
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 2rem;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.75rem;
 }
 
 .loadingContainer {
@@ -57,4 +58,14 @@
     background-color: var(--color-primary-dark);
     transform: translate(1px, 1px);
     box-shadow: 1px 1px #2e7930;
+}
+
+@media (max-width: 600px) {
+    .title {
+        font-size: 2rem;
+    }
+
+    .grid {
+        gap: 1.25rem;
+    }
 }

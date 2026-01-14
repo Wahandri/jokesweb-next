@@ -1,7 +1,7 @@
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 2rem;
+    padding: 2rem 1.5rem 3rem;
 }
 
 .dashboard {
@@ -29,7 +29,7 @@
     align-items: center;
     gap: 2rem;
     flex: 1;
-    min-width: 300px;
+    min-width: 0;
 }
 
 .avatarContainer {
@@ -50,6 +50,7 @@
 .userInfo {
     display: flex;
     flex-direction: column;
+    min-width: 0;
 }
 
 .userName {
@@ -58,17 +59,20 @@
     color: var(--color-text);
     margin-bottom: 0.5rem;
     line-height: 1.2;
+    overflow-wrap: anywhere;
 }
 
 .userEmail {
     color: var(--color-text-light);
     font-size: 1.1rem;
     margin-bottom: 1.5rem;
+    overflow-wrap: anywhere;
 }
 
 .statsRow {
     display: flex;
     gap: 2rem;
+    flex-wrap: wrap;
 }
 
 .statBadge {
@@ -101,7 +105,7 @@
     padding: 2rem;
     border-radius: 15px;
     flex: 1;
-    min-width: 300px;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
@@ -226,7 +230,7 @@
 
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 2rem;
 }
 
@@ -289,5 +293,28 @@
         padding: 1rem;
         border: 1px solid #ff4d4d;
         border-radius: 12px;
+    }
+}
+
+@media (max-width: 600px) {
+    .container {
+        padding: 1.5rem 1rem 2.5rem;
+    }
+
+    .profileCard {
+        padding: 1.75rem;
+    }
+
+    .userName {
+        font-size: 2rem;
+    }
+
+    .sectionTitle {
+        font-size: 1.6rem;
+        padding-left: 0.75rem;
+    }
+
+    .grid {
+        gap: 1.25rem;
     }
 }

@@ -1,6 +1,7 @@
 .container {
     max-width: 1200px;
     margin: 0 auto;
+    padding: 1.5rem 1rem 3rem;
 }
 
 .header {
@@ -27,8 +28,8 @@
 
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 2rem;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.75rem;
 }
 
 .cardWrapper {
@@ -84,4 +85,33 @@
     background-color: var(--color-primary-dark);
     transform: translate(1px, 1px);
     box-shadow: 1px 1px #2e7930;
+}
+
+@media (max-width: 700px) {
+    .header {
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .title {
+        font-size: 2.2rem;
+    }
+
+    .subtitle {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .grid {
+        gap: 1.25rem;
+    }
+
+    .rank {
+        top: -10px;
+        left: -10px;
+        width: 34px;
+        height: 34px;
+        font-size: 1rem;
+    }
 }
