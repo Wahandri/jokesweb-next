@@ -11,9 +11,9 @@
   background: var(--color-surface);
   padding: 2.5rem;
   border-radius: 20px;
-  box_shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
   width: 100%;
-  max_width: 400px;
+  max-width: 400px;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -124,4 +124,14 @@
 .registerLink:hover {
   background-color: var(--color-primary-dark);
   transform: translateY(-2px);
+}
+
+@media (max-width: 600px) {
+  .form {
+    padding: 1.75rem 1.5rem;
+  }
+
+  .title {
+    font-size: 1.6rem;
+  }
 }
