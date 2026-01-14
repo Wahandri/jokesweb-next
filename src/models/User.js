@@ -37,6 +37,18 @@ const UserSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.Mixed,
         default: {}
     },
+    emailVerified: {
+        type: Boolean,
+        default: false
+    },
+    verificationTokenHash: {
+        type: String,
+        default: ""
+    },
+    verificationTokenExpires: {
+        type: Date,
+        default: null
+    },
     favoriteJokes: [
         { type: mongoose.Schema.Types.ObjectId, ref: 'Joke' }
     ]
@@ -50,6 +62,9 @@ UserSchema.methods.toJSON = function () {
     delete userObject.role;
     delete userObject.__v;
     delete userObject.active;
+    delete userObject.emailVerified;
+    delete userObject.verificationTokenHash;
+    delete userObject.verificationTokenExpires;
 
     return userObject;
 }
