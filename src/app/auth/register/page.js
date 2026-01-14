@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import styles from "./register.module.css";
+import Modal from "@/components/Modal/Modal";
 
 export default function RegisterPage() {
     const [username, setUsername] = useState("");
@@ -11,8 +11,15 @@ export default function RegisterPage() {
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState("");
-    const router = useRouter();
-
+    const [registrationComplete, setRegistrationComplete] = useState(false);
+    const [isResendDisabled, setIsResendDisabled] = useState(false);
+    const [modal, setModal] = useState({
+        open: false,
+        title: "",
+        message: "",
+        variant: "info",
+    });
+    const cooldownRef = useRef(null);
     const [passwordError, setPasswordError] = useState("");
 
     const validatePassword = (pass) => {
@@ -35,6 +42,7 @@ export default function RegisterPage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
+        setRegistrationComplete(false);
 
         const passValidation = validatePassword(password);
         if (passValidation) {
@@ -57,12 +65,77 @@ export default function RegisterPage() {
             const data = await res.json();
 
             if (res.ok) {
-                router.push("/auth/login");
+                setRegistrationComplete(true);
+                setModal({
+                    open: true,
+                    title: "Verifica tu email",
+                    message:
+                        "Te hemos enviado un email de verificación. Revisa tu bandeja de entrada para activar tu cuenta.",
+                    variant: "info",
+                });
             } else {
                 setError(data.error || "Error en el registro");
             }
         } catch (err) {
             setError("Ocurrió un error. Por favor intenta de nuevo.");
+        }
+    };
+
+    useEffect(() => {
+        return () => {
+            if (cooldownRef.current) {
+                clearTimeout(cooldownRef.current);
+            }
+        };
+    }, []);
+
+    const showModal = (title, message, variant = "info") => {
+        setModal({ open: true, title, message, variant });
+    };
+
+    const closeModal = () => {
+        setModal((prev) => ({ ...prev, open: false }));
+    };
+
+    const handleResend = async () => {
+        if (!email) {
+            setError("Ingresa tu email para reenviar la verificación.");
+            return;
+        }
+
+        setIsResendDisabled(true);
+
+        try {
+            const res = await fetch("/api/auth/resend-verification", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email }),
+            });
+            const data = await res.json();
+
+            if (res.ok && data.ok) {
+                showModal(
+                    "Email reenviado",
+                    data.message || "Si existe, enviaremos un email de verificación.",
+                    "success"
+                );
+            } else {
+                showModal(
+                    "No se pudo reenviar",
+                    data.error || "Ocurrió un error al reenviar.",
+                    "error"
+                );
+            }
+        } catch (resendError) {
+            showModal(
+                "No se pudo reenviar",
+                "Ocurrió un error al reenviar.",
+                "error"
+            );
+        } finally {
+            cooldownRef.current = setTimeout(() => {
+                setIsResendDisabled(false);
+            }, 30000);
         }
     };
 
@@ -117,10 +190,33 @@ export default function RegisterPage() {
                         Crear Cuenta
                     </button>
                 </form>
+                {registrationComplete && (
+                    <div className={styles.notice}>
+                        <p className={styles.noticeText}>
+                            Te hemos enviado un email de verificación. Debes activarlo antes de
+                            iniciar sesión.
+                        </p>
+                        <button
+                            type="button"
+                            onClick={handleResend}
+                            disabled={isResendDisabled}
+                            className={styles.secondaryButton}
+                        >
+                            {isResendDisabled ? "Reenviar en 30s" : "Reenviar email"}
+                        </button>
+                    </div>
+                )}
                 <Link href="/auth/login" className={styles.link}>
                     Entrar con usuario existente
                 </Link>
             </div>
+            <Modal
+                open={modal.open}
+                title={modal.title}
+                message={modal.message}
+                variant={modal.variant}
+                onClose={closeModal}
+            />
         </div>
     );
 }
