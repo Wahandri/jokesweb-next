@@ -1,15 +1,15 @@
 "use client";
 
-import { useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import Link from "next/link";
 import Modal from "@/components/Modal/Modal";
-import styles from "./EmailVerificationBanner.module.css";
+import styles from "./verify-required.module.css";
 
-const DISMISS_KEY = "emailVerificationBannerDismissed";
-
-export default function EmailVerificationBanner() {
-    const { data: session } = useSession();
-    const [dismissed, setDismissed] = useState(false);
+export default function VerifyRequiredPage() {
+    const { data: session, status } = useSession();
+    const router = useRouter();
     const [isResendDisabled, setIsResendDisabled] = useState(false);
     const [modal, setModal] = useState({
         open: false,
@@ -19,14 +19,6 @@ export default function EmailVerificationBanner() {
     });
     const cooldownRef = useRef(null);
 
-    const isUnverified = session?.user?.emailVerified === false;
-
-    useEffect(() => {
-        if (typeof window === "undefined") return;
-
-        setDismissed(window.localStorage.getItem(DISMISS_KEY) === "1");
-    }, []);
-
     useEffect(() => {
         return () => {
             if (cooldownRef.current) {
@@ -35,19 +27,24 @@ export default function EmailVerificationBanner() {
         };
     }, []);
 
+    useEffect(() => {
+        if (status === "loading") return;
+        if (!session) {
+            router.push("/auth/login");
+            return;
+        }
+
+        if (session.user?.emailVerified) {
+            router.push("/");
+        }
+    }, [session, status, router]);
+
     const showModal = (title, message, variant = "info") => {
         setModal({ open: true, title, message, variant });
     };
 
     const closeModal = () => {
         setModal((prev) => ({ ...prev, open: false }));
-    };
-
-    const handleDismiss = () => {
-        setDismissed(true);
-        if (typeof window !== "undefined") {
-            window.localStorage.setItem(DISMISS_KEY, "1");
-        }
     };
 
     const handleResend = async () => {
@@ -107,16 +104,26 @@ export default function EmailVerificationBanner() {
         }
     };
 
-    if (!isUnverified || dismissed) {
+    if (status === "loading") {
+        return (
+            <div className={styles.container}>
+                <p>Verificando tu sesión...</p>
+            </div>
+        );
+    }
+
+    if (!session || session.user?.emailVerified) {
         return null;
     }
 
     return (
-        <div className={styles.wrapper} role="status">
-            <div className={styles.banner}>
-                <span className={styles.message}>
-                    Tu cuenta no está verificada. Revisa tu correo para activar la cuenta.
-                </span>
+        <div className={styles.container}>
+            <div className={styles.card}>
+                <h1 className={styles.title}>Verificación requerida</h1>
+                <p className={styles.description}>
+                    Para continuar con esta acción necesitas verificar tu correo electrónico.
+                    Revisa tu bandeja de entrada (y spam) y confirma tu cuenta.
+                </p>
                 <div className={styles.actions}>
                     <button
                         type="button"
@@ -126,13 +133,9 @@ export default function EmailVerificationBanner() {
                     >
                         {isResendDisabled ? "Reenviar en 30s" : "Reenviar email"}
                     </button>
-                    <button
-                        type="button"
-                        onClick={handleDismiss}
-                        className={styles.secondaryButton}
-                    >
-                        Hecho / Cerrar
-                    </button>
+                    <Link href="/" className={styles.secondaryButton}>
+                        Volver al inicio
+                    </Link>
                 </div>
             </div>
             <Modal

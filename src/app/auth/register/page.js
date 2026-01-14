@@ -114,11 +114,20 @@ export default function RegisterPage() {
             const data = await res.json();
 
             if (res.ok && data.ok) {
-                showModal(
-                    "Email reenviado",
-                    data.message || "Si existe, enviaremos un email de verificación.",
-                    "success"
-                );
+                if (data.code === "RATE_LIMITED") {
+                    const rateLimitMessage =
+                        data.rateLimitType === "HOURLY"
+                            ? "Has alcanzado el límite de 3 envíos por hora. Inténtalo más tarde."
+                            : "Espera un minuto antes de reenviar el email.";
+
+                    showModal("Espera antes de reenviar", rateLimitMessage, "info");
+                } else {
+                    showModal(
+                        "Email reenviado",
+                        data.message || "Si existe, enviaremos un email de verificación.",
+                        "success"
+                    );
+                }
             } else {
                 showModal(
                     "No se pudo reenviar",

@@ -5,16 +5,18 @@ import User from "@/models/User";
 import Joke from "@/models/Joke";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { serializeJokesWithAuthorAndScore } from "@/lib/serializeJokes";
+import { jsonForbidden, jsonUnauthorized } from "@/lib/authGuard";
 
 export async function GET(req) {
     try {
         const session = await getServerSession(authOptions);
 
         if (!session) {
-            return NextResponse.json(
-                { ok: false, error: "Unauthorized" },
-                { status: 401 }
-            );
+            return jsonUnauthorized("No autenticado");
+        }
+
+        if (session.user?.emailVerified === false) {
+            return jsonForbidden("Debes verificar tu email", "EMAIL_NOT_VERIFIED");
         }
 
         await dbConnect();
