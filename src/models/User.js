@@ -49,6 +49,18 @@ const UserSchema = new mongoose.Schema({
         type: Date,
         default: null
     },
+    lastVerificationEmailSentAt: {
+        type: Date,
+        default: null
+    },
+    verificationEmailSendCount: {
+        type: Number,
+        default: 0
+    },
+    verificationEmailSendWindowStart: {
+        type: Date,
+        default: null
+    },
     favoriteJokes: [
         { type: mongoose.Schema.Types.ObjectId, ref: 'Joke' }
     ]
@@ -65,6 +77,9 @@ UserSchema.methods.toJSON = function () {
     delete userObject.emailVerified;
     delete userObject.verificationTokenHash;
     delete userObject.verificationTokenExpires;
+    delete userObject.lastVerificationEmailSentAt;
+    delete userObject.verificationEmailSendCount;
+    delete userObject.verificationEmailSendWindowStart;
 
     return userObject;
 }

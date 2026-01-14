@@ -24,11 +24,52 @@ export async function POST(req) {
         const user = await User.findOne({ email });
 
         if (!user) {
-            return NextResponse.json({ ok: true, message: "Si existe, se reenviará" });
+            return NextResponse.json({
+                ok: true,
+                message: "Si el correo existe, recibirás un email de verificación.",
+            });
         }
 
         if (user.emailVerified) {
-            return NextResponse.json({ ok: true, message: "Ya verificado" });
+            return NextResponse.json({
+                ok: true,
+                message: "Si el correo existe, recibirás un email de verificación.",
+            });
+        }
+
+        const now = new Date();
+        const cooldownMs = 60 * 1000;
+        const windowMs = 60 * 60 * 1000;
+        const maxPerWindow = 3;
+
+        let shouldSave = false;
+        let windowStart = user.verificationEmailSendWindowStart;
+        let sendCount = user.verificationEmailSendCount ?? 0;
+
+        if (!windowStart || now.getTime() - windowStart.getTime() > windowMs) {
+            windowStart = now;
+            sendCount = 0;
+            user.verificationEmailSendWindowStart = windowStart;
+            user.verificationEmailSendCount = sendCount;
+            shouldSave = true;
+        }
+
+        const lastSentAt = user.lastVerificationEmailSentAt;
+        const cooldownActive =
+            lastSentAt && now.getTime() - lastSentAt.getTime() < cooldownMs;
+        const overLimit = sendCount >= maxPerWindow;
+
+        if (cooldownActive || overLimit) {
+            if (shouldSave) {
+                await user.save();
+            }
+
+            return NextResponse.json({
+                ok: true,
+                message: "Si el correo existe, recibirás un email de verificación.",
+                code: "RATE_LIMITED",
+                rateLimitType: cooldownActive ? "COOLDOWN" : "HOURLY",
+            });
         }
 
         const token = generateVerificationToken();
@@ -37,6 +78,9 @@ export async function POST(req) {
 
         user.verificationTokenHash = tokenHash;
         user.verificationTokenExpires = tokenExpiry;
+        user.lastVerificationEmailSentAt = now;
+        user.verificationEmailSendWindowStart = windowStart ?? now;
+        user.verificationEmailSendCount = sendCount + 1;
 
         await user.save();
 
@@ -53,7 +97,10 @@ export async function POST(req) {
             console.error("Error resending verification email:", emailError);
         }
 
-        return NextResponse.json({ ok: true, message: "Si existe, se reenviará" });
+        return NextResponse.json({
+            ok: true,
+            message: "Si el correo existe, recibirás un email de verificación.",
+        });
     } catch (error) {
         console.error("Error resending verification email:", error);
         return NextResponse.json(

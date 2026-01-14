@@ -16,6 +16,16 @@ export async function getVerifiedSessionOrNull() {
     return session;
 }
 
-export function jsonForbidden(message = "Forbidden") {
-    return NextResponse.json({ ok: false, error: message }, { status: 403 });
+export function jsonForbidden(message = "Forbidden", code = "FORBIDDEN") {
+    return NextResponse.json(
+        { ok: false, error: message, code },
+        { status: 403 }
+    );
+}
+
+export function jsonUnauthorized(message = "No autenticado") {
+    return NextResponse.json(
+        { ok: false, error: message, code: "UNAUTHORIZED" },
+        { status: 401 }
+    );
 }

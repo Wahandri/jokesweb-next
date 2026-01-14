@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import styles from "./create-joke.module.css";
@@ -17,9 +17,19 @@ export default function CreateJokePage() {
     const router = useRouter();
     const { data: session, status } = useSession();
 
+    useEffect(() => {
+        if (status === "loading") return;
+        if (!session) {
+            router.push("/auth/login");
+            return;
+        }
+        if (session.user?.emailVerified === false) {
+            router.push("/verify-required");
+        }
+    }, [session, status, router]);
+
     if (status === "loading") return <p>Loading...</p>;
-    if (!session) {
-        router.push("/auth/login");
+    if (!session || session.user?.emailVerified === false) {
         return null;
     }
 

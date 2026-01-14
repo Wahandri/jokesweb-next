@@ -25,6 +25,10 @@ export default function FavoritesPage() {
             router.push("/auth/login");
             return;
         }
+        if (session.user?.emailVerified === false) {
+            router.push("/verify-required");
+            return;
+        }
 
         const fetchFavorites = async () => {
             try {
@@ -51,7 +55,7 @@ export default function FavoritesPage() {
         );
     }
 
-    if (!session) return null;
+    if (!session || session.user?.emailVerified === false) return null;
 
     return (
         <div className={styles.container}>
