@@ -3,6 +3,12 @@ import bcrypt from "bcryptjs";
 import dbConnect from "@/lib/mongodb";
 import User from "@/models/User";
 import genBeanHeadConfig from "@/lib/genBeanHeadConfig";
+import { sendVerificationEmail } from "@/lib/email";
+import {
+    generateVerificationToken,
+    getTokenExpiry,
+    hashToken
+} from "@/lib/verificationToken";
 
 export async function POST(req) {
     try {
@@ -61,10 +67,27 @@ export async function POST(req) {
             avatarConfig: initialAvatarConfig,
         });
 
+        const token = generateVerificationToken();
+        const tokenHash = hashToken(token);
+        const tokenExpiry = getTokenExpiry(24);
+
+        user.emailVerified = false;
+        user.verificationTokenHash = tokenHash;
+        user.verificationTokenExpires = tokenExpiry;
+
         await user.save();
 
+        const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+        const verifyUrl = `${baseUrl}/verify-email?token=${token}`;
+
+        try {
+            await sendVerificationEmail({ to: email, username, verifyUrl });
+        } catch (emailError) {
+            console.error("Error sending verification email:", emailError);
+        }
+
         return NextResponse.json(
-            { ok: true, message: "User registered successfully" },
+            { ok: true, message: "User registered successfully. Please verify your email." },
             { status: 201 }
         );
     } catch (error) {
