@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 import dbConnect from "@/lib/mongodb";
 import Joke from "@/models/Joke";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { getVerifiedSessionOrNull, jsonForbidden } from "@/lib/authGuard";
 
 export async function GET(req) {
     try {
@@ -33,14 +32,27 @@ export async function GET(req) {
 
 export async function POST(req) {
     try {
-        const session = await getServerSession(authOptions);
+        const sessionResult = await getVerifiedSessionOrNull();
 
-        if (!session) {
+        if (!sessionResult) {
             return NextResponse.json(
                 { ok: false, error: "Unauthorized" },
                 { status: 401 }
             );
         }
+
+        if (sessionResult.error === "EMAIL_NOT_VERIFIED") {
+            return jsonForbidden("EMAIL_NOT_VERIFIED");
+        }
+
+        if (!sessionResult.user) {
+            return NextResponse.json(
+                { ok: false, error: "Unauthorized" },
+                { status: 401 }
+            );
+        }
+
+        const session = sessionResult;
 
         await dbConnect();
 

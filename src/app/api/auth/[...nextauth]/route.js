@@ -25,6 +25,10 @@ export const authOptions = {
                     throw new Error("User is inactive");
                 }
 
+                if (!user.emailVerified) {
+                    throw new Error("EMAIL_NOT_VERIFIED");
+                }
+
                 const isValid = await bcrypt.compare(credentials.password, user.password);
 
                 if (!isValid) {

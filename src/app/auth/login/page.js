@@ -1,17 +1,96 @@
 "use client";
 
-import { signIn } from "next-auth/react";
-import { useState } from "react";
+import { signIn, useSession } from "next-auth/react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./login.module.css";
 
 import Link from "next/link";
+import Modal from "@/components/Modal/Modal";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
+    const [showResend, setShowResend] = useState(false);
+    const [isResendDisabled, setIsResendDisabled] = useState(false);
+    const [modal, setModal] = useState({
+        open: false,
+        title: "",
+        message: "",
+        variant: "info",
+    });
+    const cooldownRef = useRef(null);
     const router = useRouter();
+    const { data: session } = useSession();
+
+    useEffect(() => {
+        if (session?.user?.emailVerified === false) {
+            setError("Debes verificar tu email antes de iniciar sesión.");
+            setShowResend(true);
+        }
+    }, [session]);
+
+    useEffect(() => {
+        return () => {
+            if (cooldownRef.current) {
+                clearTimeout(cooldownRef.current);
+            }
+        };
+    }, []);
+
+    const showModal = (title, message, variant = "info") => {
+        setModal({ open: true, title, message, variant });
+    };
+
+    const closeModal = () => {
+        setModal((prev) => ({ ...prev, open: false }));
+    };
+
+    const handleResend = async () => {
+        const targetEmail = session?.user?.email || email;
+
+        if (!targetEmail) {
+            setError("Ingresa tu email para reenviar la verificación.");
+            return;
+        }
+
+        setIsResendDisabled(true);
+
+        try {
+            const res = await fetch("/api/auth/resend-verification", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: targetEmail }),
+            });
+
+            const data = await res.json();
+
+            if (res.ok && data.ok) {
+                showModal(
+                    "Email reenviado",
+                    data.message || "Si existe, enviaremos un email de verificación.",
+                    "success"
+                );
+            } else {
+                showModal(
+                    "No se pudo reenviar",
+                    data.error || "Ocurrió un error al reenviar.",
+                    "error"
+                );
+            }
+        } catch (resendError) {
+            showModal(
+                "No se pudo reenviar",
+                "Ocurrió un error al reenviar.",
+                "error"
+            );
+        } finally {
+            cooldownRef.current = setTimeout(() => {
+                setIsResendDisabled(false);
+            }, 30000);
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -24,7 +103,13 @@ export default function LoginPage() {
         });
 
         if (res?.error) {
-            setError("Email o contraseña incorrectos");
+            if (res.error === "EMAIL_NOT_VERIFIED") {
+                setError("Debes verificar tu email antes de iniciar sesión.");
+                setShowResend(true);
+            } else {
+                setError("Email o contraseña incorrectos");
+                setShowResend(false);
+            }
         } else {
             router.push("/");
             router.refresh();
@@ -36,6 +121,21 @@ export default function LoginPage() {
             <form onSubmit={handleSubmit} className={styles.form}>
                 <h1 className={styles.title}>Iniciar Sesión</h1>
                 {error && <p className={styles.error}>{error}</p>}
+                {showResend && (
+                    <div className={styles.notice}>
+                        <p className={styles.noticeText}>
+                            Revisa tu bandeja de entrada y confirma tu email para activar tu cuenta.
+                        </p>
+                        <button
+                            type="button"
+                            onClick={handleResend}
+                            disabled={isResendDisabled}
+                            className={styles.secondaryButton}
+                        >
+                            {isResendDisabled ? "Reenviar en 30s" : "Reenviar email"}
+                        </button>
+                    </div>
+                )}
                 <div className={styles.inputGroup}>
                     <label htmlFor="email">Correo Electrónico</label>
                     <input
@@ -70,6 +170,13 @@ export default function LoginPage() {
                     Crear cuenta nueva
                 </Link>
             </form>
+            <Modal
+                open={modal.open}
+                title={modal.title}
+                message={modal.message}
+                variant={modal.variant}
+                onClose={closeModal}
+            />
         </div>
     );
 }
