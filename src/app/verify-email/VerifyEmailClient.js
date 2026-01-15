@@ -16,17 +16,33 @@ export default function VerifyEmailClient({ token }) {
 
     useEffect(() => {
         const verify = async () => {
-            if (!token) {
+            const tokenFromProp = token?.trim();
+            const tokenFromUrl = !tokenFromProp
+                ? new URLSearchParams(window.location.search).get("token")
+                : "";
+            const tokenToVerify = tokenFromProp || tokenFromUrl || "";
+
+            if (!tokenToVerify) {
                 setStatus("error");
                 setMessage("Token no encontrado. Revisa el enlace del email.");
                 return;
             }
 
             try {
+                if (process.env.NODE_ENV === "development") {
+                    console.log("[verify-email] token present:", Boolean(tokenToVerify));
+                }
                 const res = await fetch(
-                    `/api/auth/verify-email?token=${encodeURIComponent(token)}`
+                    `/api/auth/verify-email?token=${encodeURIComponent(tokenToVerify)}`
                 );
                 const data = await res.json();
+
+                if (process.env.NODE_ENV === "development") {
+                    console.log("[verify-email] status:", res.status);
+                    if (data?.error) {
+                        console.log("[verify-email] error:", data.error);
+                    }
+                }
 
                 if (res.ok && data.ok) {
                     setStatus("success");
