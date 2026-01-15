@@ -6,6 +6,7 @@ import Modal from "@/components/Modal/Modal";
 import styles from "./EmailVerificationBanner.module.css";
 
 const DISMISS_KEY = "emailVerificationBannerDismissed";
+const DISMISS_DURATION_MS = 24 * 60 * 60 * 1000;
 
 export default function EmailVerificationBanner() {
     const { data: session } = useSession();
@@ -24,7 +25,16 @@ export default function EmailVerificationBanner() {
     useEffect(() => {
         if (typeof window === "undefined") return;
 
-        setDismissed(window.localStorage.getItem(DISMISS_KEY) === "1");
+        const storedValue = window.localStorage.getItem(DISMISS_KEY);
+
+        if (!storedValue) return;
+
+        const dismissedAt = Number(storedValue);
+        if (!Number.isNaN(dismissedAt) && Date.now() - dismissedAt < DISMISS_DURATION_MS) {
+            setDismissed(true);
+        } else {
+            window.localStorage.removeItem(DISMISS_KEY);
+        }
     }, []);
 
     useEffect(() => {
@@ -46,7 +56,7 @@ export default function EmailVerificationBanner() {
     const handleDismiss = () => {
         setDismissed(true);
         if (typeof window !== "undefined") {
-            window.localStorage.setItem(DISMISS_KEY, "1");
+            window.localStorage.setItem(DISMISS_KEY, String(Date.now()));
         }
     };
 
@@ -131,7 +141,7 @@ export default function EmailVerificationBanner() {
                         onClick={handleDismiss}
                         className={styles.secondaryButton}
                     >
-                        Hecho / Cerrar
+                        Cerrar
                     </button>
                 </div>
             </div>

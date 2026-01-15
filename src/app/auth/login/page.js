@@ -26,7 +26,7 @@ export default function LoginPage() {
 
     useEffect(() => {
         if (session?.user?.emailVerified === false) {
-            setError("Debes verificar tu email antes de iniciar sesión.");
+            setError("Debes verificar tu correo antes de iniciar sesión.");
             setShowResend(true);
         }
     }, [session]);
@@ -104,6 +104,7 @@ export default function LoginPage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
+        setShowResend(false);
 
         const res = await signIn("credentials", {
             email,
@@ -113,7 +114,7 @@ export default function LoginPage() {
 
         if (res?.error) {
             if (res.error === "EMAIL_NOT_VERIFIED") {
-                setError("Debes verificar tu email antes de iniciar sesión.");
+                setError("Debes verificar tu correo antes de iniciar sesión.");
                 setShowResend(true);
             } else {
                 setError("Email o contraseña incorrectos");

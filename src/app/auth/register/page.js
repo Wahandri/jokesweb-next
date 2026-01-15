@@ -12,6 +12,7 @@ export default function RegisterPage() {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState("");
     const [registrationComplete, setRegistrationComplete] = useState(false);
+    const [registeredEmail, setRegisteredEmail] = useState("");
     const [isResendDisabled, setIsResendDisabled] = useState(false);
     const [modal, setModal] = useState({
         open: false,
@@ -66,13 +67,8 @@ export default function RegisterPage() {
 
             if (res.ok) {
                 setRegistrationComplete(true);
-                setModal({
-                    open: true,
-                    title: "Verifica tu email",
-                    message:
-                        "Te hemos enviado un email de verificación. Revisa tu bandeja de entrada para activar tu cuenta.",
-                    variant: "info",
-                });
+                setRegisteredEmail(email);
+                setError("");
             } else {
                 setError(data.error || "Error en el registro");
             }
@@ -98,8 +94,14 @@ export default function RegisterPage() {
     };
 
     const handleResend = async () => {
-        if (!email) {
-            setError("Ingresa tu email para reenviar la verificación.");
+        const targetEmail = registeredEmail || email;
+
+        if (!targetEmail) {
+            showModal(
+                "No se pudo reenviar",
+                "Ingresa tu email para reenviar la verificación.",
+                "error"
+            );
             return;
         }
 
@@ -109,7 +111,7 @@ export default function RegisterPage() {
             const res = await fetch("/api/auth/resend-verification", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email }),
+                body: JSON.stringify({ email: targetEmail }),
             });
             const data = await res.json();
 
@@ -152,58 +154,64 @@ export default function RegisterPage() {
         <div className={styles.container}>
             <div className={styles.card}>
                 <h1 className={styles.title}>Registro</h1>
-                <form onSubmit={handleSubmit} className={styles.form}>
-                    {error && <p className={styles.error}>{error}</p>}
-                    <div className={styles.inputGroup}>
-                        <input
-                            type="text"
-                            placeholder="Nombre de usuario"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            required
-                            className={styles.input}
-                        />
-                    </div>
-                    <div className={styles.inputGroup}>
-                        <input
-                            type="email"
-                            placeholder="Correo Electrónico"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                            className={styles.input}
-                        />
-                    </div>
-                    <div className={styles.inputGroup}>
-                        <input
-                            type="password"
-                            placeholder="Contraseña"
-                            value={password}
-                            onChange={handlePasswordChange}
-                            required
-                            className={`${styles.input} ${passwordError ? styles.invalid : ''}`}
-                        />
-                        {passwordError && <p className={styles.fieldError}>{passwordError}</p>}
-                    </div>
-                    <div className={styles.inputGroup}>
-                        <input
-                            type="password"
-                            placeholder="Confirmar Contraseña"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            required
-                            className={styles.input}
-                        />
-                    </div>
-                    <button type="submit" className={styles.button}>
-                        Crear Cuenta
-                    </button>
-                </form>
+                {!registrationComplete && (
+                    <form onSubmit={handleSubmit} className={styles.form}>
+                        {error && <p className={styles.error}>{error}</p>}
+                        <div className={styles.inputGroup}>
+                            <input
+                                type="text"
+                                placeholder="Nombre de usuario"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
+                                required
+                                className={styles.input}
+                            />
+                        </div>
+                        <div className={styles.inputGroup}>
+                            <input
+                                type="email"
+                                placeholder="Correo Electrónico"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                                className={styles.input}
+                            />
+                        </div>
+                        <div className={styles.inputGroup}>
+                            <input
+                                type="password"
+                                placeholder="Contraseña"
+                                value={password}
+                                onChange={handlePasswordChange}
+                                required
+                                className={`${styles.input} ${passwordError ? styles.invalid : ''}`}
+                            />
+                            {passwordError && (
+                                <p className={styles.fieldError}>{passwordError}</p>
+                            )}
+                        </div>
+                        <div className={styles.inputGroup}>
+                            <input
+                                type="password"
+                                placeholder="Confirmar Contraseña"
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                required
+                                className={styles.input}
+                            />
+                        </div>
+                        <button type="submit" className={styles.button}>
+                            Crear Cuenta
+                        </button>
+                    </form>
+                )}
                 {registrationComplete && (
                     <div className={styles.notice}>
                         <p className={styles.noticeText}>
-                            Te hemos enviado un email de verificación. Debes activarlo antes de
-                            iniciar sesión.
+                            Cuenta creada. Te hemos enviado un email para verificarla.
+                        </p>
+                        <p className={styles.noticeText}>
+                            Revisa tu bandeja de entrada y spam.
                         </p>
                         <button
                             type="button"
@@ -213,11 +221,16 @@ export default function RegisterPage() {
                         >
                             {isResendDisabled ? "Reenviar en 30s" : "Reenviar email"}
                         </button>
+                        <Link href="/auth/login" className={styles.link}>
+                            Ir a iniciar sesión
+                        </Link>
                     </div>
                 )}
-                <Link href="/auth/login" className={styles.link}>
-                    Entrar con usuario existente
-                </Link>
+                {!registrationComplete && (
+                    <Link href="/auth/login" className={styles.link}>
+                        Entrar con usuario existente
+                    </Link>
+                )}
             </div>
             <Modal
                 open={modal.open}
