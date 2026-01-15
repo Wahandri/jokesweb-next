@@ -15,6 +15,10 @@ export async function sendVerificationEmail({ to, username, verifyUrl }) {
         to,
         subject: "Verify your email",
         text: `Hi ${name},\n\nPlease verify your email by clicking the link below:\n${verifyUrl}\n\nIf you did not create this account, you can ignore this email.`,
+        html: `<p>Hi ${name},</p>
+<p>Please verify your email by clicking the link below:</p>
+<p><a href="${verifyUrl}">Verify your email</a></p>
+<p>If you did not create this account, you can ignore this email.</p>`,
     });
 
     if (error) {
