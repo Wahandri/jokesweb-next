@@ -2,7 +2,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 2rem;
+    padding: 0.75rem 2rem;
     background-color: var(--color-surface);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     position: sticky;
@@ -18,7 +18,39 @@
 }
 
 .logo {
+    width: 140px;
+    height: auto;
     object-fit: contain;
+}
+
+.menu {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex: 1;
+    justify-content: space-between;
+}
+
+.menuButton {
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 999px;
+    padding: 0.4rem 0.9rem;
+    background-color: transparent;
+    color: var(--color-text-dark);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.menuIcon {
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+.menuLabel {
+    font-size: 0.95rem;
 }
 
 .links {
@@ -106,7 +138,7 @@
 
 @media (max-width: 900px) {
     .navbar {
-        padding: 1rem;
+        padding: 0.75rem 1rem;
     }
 
     .links {
@@ -117,28 +149,57 @@
 
 @media (max-width: 720px) {
     .navbar {
+        align-items: center;
+    }
+
+    .logo {
+        width: 120px;
+    }
+
+    .menuButton {
+        display: inline-flex;
+    }
+
+    .menu {
+        width: 100%;
         flex-direction: column;
         align-items: stretch;
+        gap: 1rem;
+        background-color: var(--color-surface);
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        padding: 1rem 0;
+        display: none;
+    }
+
+    .menuOpen {
+        display: flex;
     }
 
     .logoContainer {
-        justify-content: center;
+        justify-content: flex-start;
     }
 
     .links,
     .auth {
         width: 100%;
         justify-content: center;
+        flex-direction: column;
     }
 
     .userMenu {
         flex-direction: column;
         gap: 0.5rem;
+        align-items: center;
     }
 }
 
 @media (max-width: 480px) {
     .links {
         flex-direction: column;
+    }
+
+    .menuButton {
+        width: 100%;
+        justify-content: center;
     }
 }
