@@ -8,7 +8,9 @@ export async function middleware(req) {
     if (
         token &&
         token.emailVerified === false &&
-        (pathname.startsWith("/create-joke") || pathname.startsWith("/favorites"))
+        (pathname.startsWith("/create-joke") ||
+            pathname.startsWith("/favorites") ||
+            pathname.startsWith("/profile"))
     ) {
         return NextResponse.redirect(new URL("/verify-required", req.url));
     }
