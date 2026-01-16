@@ -42,13 +42,37 @@ export async function POST(req) {
             );
         }
 
-        // Check if user already exists
+        // Check if user already exists (avoid enumeration with generic response)
         const existingUser = await User.findOne({ $or: [{ email }, { username }] });
         if (existingUser) {
-            return NextResponse.json(
-                { ok: false, error: "El usuario o email ya existe" },
-                { status: 400 }
-            );
+            if (existingUser.email === email && !existingUser.emailVerified) {
+                const token = generateVerificationToken();
+                const tokenHash = hashToken(token);
+                const tokenExpiry = getTokenExpiry(24);
+
+                existingUser.verificationTokenHash = tokenHash;
+                existingUser.verificationTokenExpires = tokenExpiry;
+                await existingUser.save();
+
+                const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+                const verifyUrl = `${baseUrl}/verify-email?token=${token}`;
+
+                try {
+                    await sendVerificationEmail({
+                        to: email,
+                        username: existingUser.username,
+                        verifyUrl,
+                    });
+                } catch (emailError) {
+                    console.error("Error sending verification email:", emailError);
+                }
+            }
+
+            return NextResponse.json({
+                ok: true,
+                message:
+                    "Si el correo es válido, recibirás un email para verificar tu cuenta.",
+            });
         }
 
         // Hash password
@@ -86,10 +110,11 @@ export async function POST(req) {
             console.error("Error sending verification email:", emailError);
         }
 
-        return NextResponse.json(
-            { ok: true, message: "User registered successfully. Please verify your email." },
-            { status: 201 }
-        );
+        return NextResponse.json({
+            ok: true,
+            message:
+                "Si el correo es válido, recibirás un email para verificar tu cuenta.",
+        });
     } catch (error) {
         console.error("Error registering user:", error);
         return NextResponse.json(

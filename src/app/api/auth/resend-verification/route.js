@@ -8,6 +8,59 @@ import {
     hashToken,
 } from "@/lib/verificationToken";
 
+const ipRateLimitStore =
+    globalThis.verificationResendIpRateLimit ||
+    new Map();
+
+globalThis.verificationResendIpRateLimit = ipRateLimitStore;
+
+function getClientIp(req) {
+    const forwardedFor = req.headers.get("x-forwarded-for");
+    if (forwardedFor) {
+        return forwardedFor.split(",")[0]?.trim();
+    }
+
+    return (
+        req.headers.get("x-real-ip") ||
+        req.headers.get("cf-connecting-ip") ||
+        "unknown"
+    );
+}
+
+function checkIpRateLimit(ip, now) {
+    const windowMs = 60 * 60 * 1000;
+    const maxPerWindow = 10;
+    const cooldownMs = 15 * 1000;
+
+    const entry = ipRateLimitStore.get(ip) || {
+        windowStart: now,
+        count: 0,
+        lastRequestAt: null,
+    };
+
+    if (now.getTime() - entry.windowStart.getTime() > windowMs) {
+        entry.windowStart = now;
+        entry.count = 0;
+        entry.lastRequestAt = null;
+    }
+
+    const cooldownActive =
+        entry.lastRequestAt &&
+        now.getTime() - entry.lastRequestAt.getTime() < cooldownMs;
+    const overLimit = entry.count >= maxPerWindow;
+
+    if (cooldownActive || overLimit) {
+        ipRateLimitStore.set(ip, entry);
+        return { blocked: true, type: cooldownActive ? "COOLDOWN" : "HOURLY" };
+    }
+
+    entry.count += 1;
+    entry.lastRequestAt = now;
+    ipRateLimitStore.set(ip, entry);
+
+    return { blocked: false };
+}
+
 export async function POST(req) {
     try {
         const { email } = await req.json();
@@ -20,6 +73,19 @@ export async function POST(req) {
         }
 
         await dbConnect();
+
+        const now = new Date();
+        const clientIp = getClientIp(req);
+        const ipLimit = checkIpRateLimit(clientIp, now);
+
+        if (ipLimit.blocked) {
+            return NextResponse.json({
+                ok: true,
+                message: "Si el correo existe, recibirás un email de verificación.",
+                code: "RATE_LIMITED",
+                rateLimitType: ipLimit.type,
+            });
+        }
 
         const user = await User.findOne({ email });
 
@@ -37,7 +103,6 @@ export async function POST(req) {
             });
         }
 
-        const now = new Date();
         const cooldownMs = 60 * 1000;
         const windowMs = 60 * 60 * 1000;
         const maxPerWindow = 3;

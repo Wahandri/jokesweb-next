@@ -21,18 +21,27 @@ export async function GET(req) {
 
         if (!user) {
             return NextResponse.json(
-                { ok: false, error: "Token inválido" },
+                { ok: false, error: "Token inválido o expirado", code: "TOKEN_INVALID" },
                 { status: 400 }
             );
         }
 
         if (user.emailVerified) {
+            user.verificationTokenHash = "";
+            user.verificationTokenExpires = null;
+            await user.save();
             return NextResponse.json({ ok: true, message: "Ya verificado" });
         }
 
-        if (!user.verificationTokenExpires || user.verificationTokenExpires.getTime() < Date.now()) {
+        if (
+            !user.verificationTokenExpires ||
+            user.verificationTokenExpires.getTime() < Date.now()
+        ) {
+            user.verificationTokenHash = "";
+            user.verificationTokenExpires = null;
+            await user.save();
             return NextResponse.json(
-                { ok: false, error: "Token expirado" },
+                { ok: false, error: "Token inválido o expirado", code: "TOKEN_EXPIRED" },
                 { status: 400 }
             );
         }

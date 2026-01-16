@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import styles from "./verify-email.module.css";
@@ -12,9 +12,14 @@ export default function VerifyEmailClient({ token }) {
     const [resendMessage, setResendMessage] = useState("");
     const [isResending, setIsResending] = useState(false);
     const [isTokenExpired, setIsTokenExpired] = useState(false);
+    const [isTokenInvalid, setIsTokenInvalid] = useState(false);
     const router = useRouter();
+    const hasVerifiedRef = useRef(false);
 
     useEffect(() => {
+        if (hasVerifiedRef.current) return;
+        hasVerifiedRef.current = true;
+
         const verify = async () => {
             const tokenFromProp = token?.trim();
             const tokenFromUrl = !tokenFromProp
@@ -29,9 +34,6 @@ export default function VerifyEmailClient({ token }) {
             }
 
             try {
-                if (process.env.NODE_ENV === "development") {
-                    console.log("[verify-email] token present:", Boolean(tokenToVerify));
-                }
                 const res = await fetch(
                     `/api/auth/verify-email?token=${encodeURIComponent(tokenToVerify)}`
                 );
@@ -42,16 +44,23 @@ export default function VerifyEmailClient({ token }) {
                     if (data?.error) {
                         console.log("[verify-email] error:", data.error);
                     }
+                    if (data?.code) {
+                        console.log("[verify-email] code:", data.code);
+                    }
                 }
 
                 if (res.ok && data.ok) {
                     setStatus("success");
                     setMessage("Email verificado correctamente.");
                     setIsTokenExpired(false);
+                    setIsTokenInvalid(false);
                 } else {
                     setStatus("error");
                     setMessage(data.error || "No se pudo verificar");
-                    setIsTokenExpired(data.error === "Token expirado");
+                    setIsTokenExpired(data.code === "TOKEN_EXPIRED");
+                    setIsTokenInvalid(
+                        data.code === "TOKEN_INVALID" || data.code === "TOKEN_USED"
+                    );
                 }
             } catch (error) {
                 setStatus("error");
@@ -127,9 +136,13 @@ export default function VerifyEmailClient({ token }) {
                 {status === "error" && (
                     <div className={styles.error}>
                         <p>❌ Error: {message}</p>
-                        {isTokenExpired && (
+                        {(isTokenExpired || isTokenInvalid) && (
                             <div className={styles.resend}>
-                                <p>Tu enlace expiró. Reenviaremos uno nuevo.</p>
+                                <p>
+                                    {isTokenExpired
+                                        ? "Tu enlace expiró. Reenviaremos uno nuevo."
+                                        : "El enlace no es válido. Solicita uno nuevo."}
+                                </p>
                                 <input
                                     type="email"
                                     placeholder="Tu correo"
@@ -148,6 +161,11 @@ export default function VerifyEmailClient({ token }) {
                                 {resendMessage && (
                                     <p className={styles.info}>{resendMessage}</p>
                                 )}
+                                <p className={styles.info}>
+                                    <Link href="/auth/login" className={styles.link}>
+                                        Volver a iniciar sesión
+                                    </Link>
+                                </p>
                             </div>
                         )}
                     </div>
